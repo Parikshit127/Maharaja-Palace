@@ -1,11 +1,11 @@
 import React from 'react';
 
-// Button Component
+// Button Component with fixed colors
 export const Button = ({ children, variant = 'primary', size = 'md', className = '', ...props }) => {
   const baseStyles = 'font-semibold transition-all duration-300 border-2 tracking-wide';
   
   const variants = {
-    primary: 'bg-transparent border-[#B8860B] text-[#B8860B] hover:bg-[#B8860B] hover:text-white',
+    primary: 'bg-transparent border-[#0B1A33] text-[#0B1A33] hover:bg-[#0B1A33] hover:text-white',
     filled: 'bg-[#B8860B] border-[#B8860B] text-white hover:bg-[#8B6914] hover:border-[#8B6914]',
     outline: 'bg-transparent border-gray-300 text-gray-700 hover:border-[#B8860B] hover:text-[#B8860B]'
   };

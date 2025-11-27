@@ -2,7 +2,7 @@ import React from 'react';
 
 export const MarqueeSection = () => {
   return (
-    <div className="bg-[#B8860B] py-6 overflow-hidden relative">
+    <div className="bg-white py-6 overflow-hidden relative border-t-2 border-b-2 border-[#B8860B]">
       <div className="marquee-container">
         <div className="marquee-content">
           {/* First set of text */}
@@ -31,7 +31,7 @@ export const MarqueeSection = () => {
         .marquee-text {
           font-size: 1.5rem;
           font-weight: 600;
-          color: white;
+          color: #000000;
           letter-spacing: 0.1em;
           padding: 0 2rem;
           font-family: 'Playfair Display', serif;

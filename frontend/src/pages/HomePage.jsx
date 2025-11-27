@@ -65,7 +65,7 @@ export const HomePage = () => {
               onClick={() => window.location.href = '/rooms'}
             />
             <ImageCard
-              image="https://images.unsplash.com/photo-1519167758481-83f29da8c2f0?w=800"
+              image="https://images.unsplash.com/photo-1762765684673-d22ece602b10?w=800"
               title="Banquet Halls"
               description="Host your special events in our magnificent banquet halls that blend grandeur with modern amenities."
               onClick={() => window.location.href = '/banquet'}

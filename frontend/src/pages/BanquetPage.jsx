@@ -9,7 +9,7 @@ export const BanquetPage = () => {
       capacity: 500,
       description: 'Our largest and most opulent banquet hall, perfect for grand weddings and large-scale events. Features crystal chandeliers, marble flooring, and state-of-the-art audio-visual systems.',
       area: '8,000 sq ft',
-      image: 'https://images.unsplash.com/photo-1519167758481-83f29da8c2f0?w=1200',
+      image: 'https://images.unsplash.com/photo-1762765684673-d22ece602b10?w=800',
       features: ['Stage Setup', 'Professional Lighting', 'Audio System', 'Bridal Suite', 'Valet Parking']
     },
     {

@@ -18,7 +18,7 @@ export const GalleryPage = () => {
     { id: 1, category: 'rooms', image: 'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800', title: 'Deluxe Suite' },
     { id: 2, category: 'dining', image: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800', title: 'Fine Dining Restaurant' },
     { id: 3, category: 'exterior', image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=800', title: 'Hotel Exterior' },
-    { id: 4, category: 'banquet', image: 'https://images.unsplash.com/photo-1519167758481-83f29da8c2f0?w=800', title: 'Grand Banquet Hall' },
+    { id: 4, category: 'banquet', image: 'https://images.unsplash.com/photo-1762765684673-d22ece602b10?w=800', title: 'Grand Banquet Hall' },
     { id: 5, category: 'rooms', image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800', title: 'Royal Penthouse' },
     { id: 6, category: 'dining', image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800', title: 'All Day Dining' },
     { id: 7, category: 'exterior', image: 'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=800', title: 'Night View' },
