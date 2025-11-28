@@ -231,7 +231,7 @@ export const HomePage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Section - FIXED BUTTON VISIBILITY */}
       <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -256,13 +256,13 @@ export const HomePage = () => {
             >
               Book Your Stay
             </Button>
-            <Button 
-              variant="primary" 
-              size="lg"
+            {/* FIXED: Changed from 'primary' to 'secondary' for better visibility */}
+            <button
               onClick={() => window.location.href = '/contact'}
+              className="px-8 py-4 text-lg font-semibold border-2 border-white text-white bg-transparent hover:bg-white hover:text-[#0B1A33] transition-all duration-300 tracking-wide"
             >
               Contact Us
-            </Button>
+            </button>
           </div>
         </div>
       </section>

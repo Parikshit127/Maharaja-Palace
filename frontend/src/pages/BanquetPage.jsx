@@ -18,7 +18,7 @@ export const BanquetPage = () => {
       capacity: 300,
       description: 'An elegant space adorned with traditional Indian artwork and modern amenities. Ideal for corporate events, conferences, and medium-sized celebrations.',
       area: '5,000 sq ft',
-      image: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1200',
+      image: 'https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=1200&q=80',
       features: ['Projector & Screen', 'Conference Setup', 'High-Speed WiFi', 'Podium', 'Catering Services']
     },
     {
@@ -27,7 +27,7 @@ export const BanquetPage = () => {
       capacity: 200,
       description: 'A stunning outdoor venue surrounded by lush gardens and fountains. Perfect for intimate gatherings, cocktail parties, and sunset celebrations.',
       area: '4,000 sq ft',
-      image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1200',
+      image: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1200&q=80',
       features: ['Open Air Setting', 'Garden Views', 'Decorative Lighting', 'Weather Protection', 'Bar Setup']
     },
     {
@@ -36,18 +36,18 @@ export const BanquetPage = () => {
       capacity: 150,
       description: 'An intimate and sophisticated space with floor-to-ceiling windows and contemporary decor. Ideal for cocktail receptions and social gatherings.',
       area: '2,500 sq ft',
-      image: 'https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=1200',
+      image: 'https://images.unsplash.com/photo-1478146896981-b80fe463b330?w=1200&q=80',
       features: ['Natural Lighting', 'Dance Floor', 'Premium Decor', 'Cocktail Bar', 'Lounge Area']
     }
   ]);
 
   return (
     <div className="bg-[#faf9f6]">
-      {/* Hero Section */}
+      {/* Hero Section - FIXED IMAGE URL */}
       <HeroSection
         title="Magnificent Banquet Halls"
         subtitle="Events & Celebrations"
-        backgroundImage="https://images.unsplash.com/photo-1519167758481-83f29da8c2f0?w=1600"
+        backgroundImage="https://images.unsplash.com/photo-1762765684673-d22ece602b10?w=800"
         height="h-[70vh]"
       />
 
@@ -201,11 +201,11 @@ export const BanquetPage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Section - FIXED BUTTON VISIBILITY */}
       <section className="relative h-[50vh] flex items-center justify-center overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600)' }}
+          style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1600&q=80)' }}
         >
           <div className="absolute inset-0 bg-black/60"></div>
         </div>
@@ -225,13 +225,13 @@ export const BanquetPage = () => {
             >
               Schedule Site Visit
             </Button>
-            <Button 
-              variant="primary" 
-              size="lg"
+            {/* FIXED: White border button for visibility on dark background */}
+            <button
               onClick={() => window.location.href = '/contact'}
+              className="px-8 py-4 text-lg font-semibold border-2 border-white text-white bg-transparent hover:bg-white hover:text-[#0B1A33] transition-all duration-300 tracking-wide"
             >
               Request Quote
-            </Button>
+            </button>
           </div>
         </div>
       </section>

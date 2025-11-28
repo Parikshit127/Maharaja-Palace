@@ -206,7 +206,7 @@ export const RestaurantPage = () => {
             {
               title: 'Asian Fusion',
               description: 'A perfect blend of flavors from China, Thailand, Japan, and Southeast Asia.',
-              image: 'https://images.unsplash.com/photo-1580959375944-c6f52d969f62?w=800'
+              image: 'https://images.unsplash.com/photo-1553621042-f6e147245754?w=800'
             }
           ].map((cuisine, index) => (
             <div 
@@ -229,7 +229,7 @@ export const RestaurantPage = () => {
         </div>
       </section>
 
-      {/* CTA Section */}
+      {/* CTA Section - FIXED BUTTON VISIBILITY */}
       <section className="relative h-[50vh] flex items-center justify-center overflow-hidden">
         <div 
           className="absolute inset-0 bg-cover bg-center"
@@ -253,13 +253,13 @@ export const RestaurantPage = () => {
             >
               Make a Reservation
             </Button>
-            <Button 
-              variant="primary" 
-              size="lg"
+            {/* FIXED: White border button for visibility on dark background */}
+            <button
               onClick={() => window.location.href = '/contact'}
+              className="px-8 py-4 text-lg font-semibold border-2 border-white text-white bg-transparent hover:bg-white hover:text-[#0B1A33] transition-all duration-300 tracking-wide"
             >
               View Menus
-            </Button>
+            </button>
           </div>
         </div>
       </section>
