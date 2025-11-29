@@ -13,7 +13,7 @@ import { RoomsPage } from './pages/RoomsPage';
 import { RoomDetailsPage } from './pages/RoomDetailsPage';
 import { BookingPage } from './pages/BookingPage';
 import { BanquetPage } from './pages/BanquetPage';
-import { RestaurantPage } from './pages/RestaurantPage';
+import RestaurantPage from './pages/RestaurantPage';
 import { AdminPage } from './pages/AdminPage';
 import { GalleryPage } from './pages/GalleryPage';
 import { AboutPage } from './pages/AboutPage';
