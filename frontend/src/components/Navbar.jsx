@@ -20,11 +20,15 @@ export const Navbar = () => {
     { name: 'Home', path: '/' },
     { name: 'Rooms', path: '/rooms' },
     { name: 'Banquet', path: '/banquet' },
-    { name: 'Restaurant', path: '/restaurant' },
+    { name: 'Restaurant', path: '/restaurant' }, // Fixed path
     { name: 'Gallery', path: '/gallery' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
+
+  // Split for centering: Left up to Restaurant, Right from Gallery
+  const leftNav = navLinks.slice(0, 4); // Home, Rooms, Banquet, Restaurant
+  const rightNav = navLinks.slice(4); // Gallery, About, Contact
 
   const isActive = (path) => location.pathname === path;
 
@@ -37,21 +41,10 @@ export const Navbar = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between">
-          {/* Logo - Always visible with better contrast */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className={`text-2xl md:text-3xl font-serif font-bold transition-colors duration-300 ${
-              isScrolled 
-                ? 'text-[#B8860B]' 
-                : 'text-[#B8860B] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]'
-            }`}>
-              MAHARAJA PALACE
-            </div>
-          </Link>
-
-          {/* Desktop Navigation */}
+        <div className="flex items-center">
+          {/* Left Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
-            {navLinks.map((link) => (
+            {leftNav.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
@@ -68,8 +61,38 @@ export const Navbar = () => {
             ))}
           </div>
 
-          {/* Auth Buttons */}
-          <div className="hidden lg:flex items-center space-x-4">
+          {/* Centered Logo */}
+          <Link to="/" className="flex-1 flex justify-center mx-8">
+            <div className={`text-2xl md:text-3xl font-serif font-bold transition-colors duration-300 ${
+              isScrolled 
+                ? 'text-[#B8860B]' 
+                : 'text-[#B8860B] drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]'
+            }`}>
+              MAHARAJA PALACE
+            </div>
+          </Link>
+
+          {/* Right Navigation */}
+          <div className="hidden lg:flex items-center space-x-8">
+            {rightNav.map((link) => (
+              <Link
+                key={link.path}
+                to={link.path}
+                className={`text-sm uppercase tracking-wider transition-colors duration-300 ${
+                  isActive(link.path)
+                    ? 'text-[#B8860B] font-semibold'
+                    : isScrolled
+                    ? 'text-gray-700 hover:text-[#B8860B]'
+                    : 'text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)] hover:text-[#B8860B]'
+                }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+          </div>
+
+          {/* Auth Buttons - Pushed to end */}
+          <div className="hidden lg:flex items-center space-x-4 ml-4">
             {user ? (
               <>
                 <Link
@@ -113,7 +136,7 @@ export const Navbar = () => {
 
           {/* Mobile Menu Button */}
           <button
-            className="lg:hidden"
+            className="lg:hidden ml-auto"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           >
             <div className="w-6 h-5 flex flex-col justify-between">
