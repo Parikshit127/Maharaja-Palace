@@ -5,7 +5,6 @@ const roomTypeSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, 'Please provide a room type name'],
-      enum: ['Single', 'Double', 'Suite', 'Royal Suite', 'Penthouse'],
       unique: true,
     },
     description: {
@@ -31,12 +30,17 @@ const roomTypeSchema = new mongoose.Schema(
       type: Number,
       required: [true, 'Please provide room size in square feet'],
     },
-    features: {
-      hasBalcony: { type: Boolean, default: false },
-      hasJacuzzi: { type: Boolean, default: false },
-      hasKitchenette: { type: Boolean, default: false },
-      has24HourService: { type: Boolean, default: true },
-    },
+    features: [
+      {
+        type: String,
+      },
+    ],
+    images: [
+      {
+        url: String,
+        alt: String,
+      },
+    ],
     isActive: {
       type: Boolean,
       default: true,

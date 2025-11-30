@@ -1,6 +1,7 @@
 import axios from 'axios';
+import { showToast } from '../utils/toast';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5002/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -10,23 +11,84 @@ const api = axios.create({
 });
 
 // Add token to requests
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
-
-// Handle responses
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/login';
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
+
+// Handle responses with comprehensive error handling
+api.interceptors.response.use(
+  (response) => {
+    // Optionally show success toast for mutations
+    if (['post', 'put', 'delete'].includes(response.config.method)) {
+      const successMessage = response.data?.message || 'Operation successful';
+      if (response.config.showSuccessToast !== false) {
+        showToast(successMessage, 'success');
+      }
+    }
+    return response;
+  },
+  (error) => {
+    // Network error (no response from server)
+    if (!error.response) {
+      showToast('Network error. Please check your connection.', 'error');
+      return Promise.reject(error);
+    }
+
+    const { status, data } = error.response;
+
+    // Handle different error status codes
+    switch (status) {
+      case 400:
+        // Validation error
+        showToast(data?.message || 'Invalid request. Please check your input.', 'error');
+        break;
+
+      case 401:
+        // Authentication error
+        showToast('Session expired. Please login again.', 'error');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 1500);
+        break;
+
+      case 403:
+        // Authorization error
+        showToast('You do not have permission to perform this action.', 'error');
+        break;
+
+      case 404:
+        // Not found
+        showToast(data?.message || 'Resource not found.', 'error');
+        break;
+
+      case 409:
+        // Conflict (e.g., duplicate entry)
+        showToast(data?.message || 'This resource already exists.', 'error');
+        break;
+
+      case 500:
+      case 502:
+      case 503:
+        // Server error
+        showToast('Server error. Please try again later.', 'error');
+        break;
+
+      default:
+        // Generic error
+        showToast(data?.message || 'An error occurred. Please try again.', 'error');
+    }
+
     return Promise.reject(error);
   }
 );
@@ -37,15 +99,23 @@ export const authAPI = {
   login: (data) => api.post('/auth/login', data),
   getMe: () => api.get('/auth/me'),
   getAllUsers: () => api.get('/auth/users'),
+  getUserDetails: (id) => api.get(`/auth/users/${id}`),
+  updateUser: (id, data) => api.put(`/auth/users/${id}`, data),
+  toggleUserStatus: (id) => api.put(`/auth/users/${id}/status`),
 };
 
 // Room APIs
 export const roomAPI = {
   getRoomTypes: () => api.get('/rooms/room-types'),
+  createRoomType: (data) => api.post('/rooms/room-types', data),
+  updateRoomType: (id, data) => api.put(`/rooms/room-types/${id}`, data),
+  deleteRoomType: (id) => api.delete(`/rooms/room-types/${id}`),
   getAvailableRooms: (params) => api.get('/rooms/available', { params }),
   getAllRooms: () => api.get('/rooms'),
   getRoomById: (id) => api.get(`/rooms/${id}`),
   createRoom: (data) => api.post('/rooms', data),
+  updateRoom: (id, data) => api.put(`/rooms/${id}`, data),
+  deleteRoom: (id) => api.delete(`/rooms/${id}`),
   updateRoomStatus: (id, status) => api.put(`/rooms/${id}/status`, { status }),
 };
 
@@ -53,8 +123,11 @@ export const roomAPI = {
 export const bookingAPI = {
   createBooking: (data) => api.post('/bookings', data),
   getMyBookings: () => api.get('/bookings/me'),
+  getAllBookings: () => api.get('/bookings'),
   getBookingDetails: (id) => api.get(`/bookings/${id}`),
   cancelBooking: (id) => api.put(`/bookings/${id}/cancel`),
+  updateBookingStatus: (id, status) => api.put(`/bookings/${id}/status`, { status }),
+  getUserBookings: (userId) => api.get(`/bookings/user/${userId}`),
 };
 
 // Banquet APIs
@@ -62,6 +135,8 @@ export const banquetAPI = {
   getAllHalls: () => api.get('/banquet/halls'),
   getHallById: (id) => api.get(`/banquet/halls/${id}`),
   createHall: (data) => api.post('/banquet/halls', data),
+  updateHall: (id, data) => api.put(`/banquet/halls/${id}`, data),
+  deleteHall: (id) => api.delete(`/banquet/halls/${id}`),
   createBooking: (data) => api.post('/banquet/bookings', data),
   getAllBookings: () => api.get('/banquet/bookings'),
   getMyBookings: () => api.get('/banquet/bookings/me'),
@@ -72,6 +147,8 @@ export const restaurantAPI = {
   getAllTables: () => api.get('/restaurant/tables'),
   getTableById: (id) => api.get(`/restaurant/tables/${id}`),
   createTable: (data) => api.post('/restaurant/tables', data),
+  updateTable: (id, data) => api.put(`/restaurant/tables/${id}`, data),
+  deleteTable: (id) => api.delete(`/restaurant/tables/${id}`),
   createBooking: (data) => api.post('/restaurant/bookings', data),
   getAllBookings: () => api.get('/restaurant/bookings'),
   getMyBookings: () => api.get('/restaurant/bookings/me'),

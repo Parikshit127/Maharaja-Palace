@@ -148,3 +148,65 @@ export const getAllBanquetBookings = async (req, res, next) => {
     next(error);
   }
 };
+
+// Admin - Update Banquet Hall
+export const updateBanquetHall = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { name, description, capacity, basePrice, amenities, features, images } = req.body;
+
+    const banquetHall = await BanquetHall.findByIdAndUpdate(
+      id,
+      { name, description, capacity, basePrice, amenities, features, images },
+      { new: true, runValidators: true }
+    );
+
+    if (!banquetHall) {
+      return res.status(404).json({
+        success: false,
+        message: 'Banquet hall not found',
+      });
+    }
+
+    logger.info(`Banquet hall updated: ${banquetHall.name}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Banquet hall updated successfully',
+      banquetHall,
+    });
+  } catch (error) {
+    logger.error(`Update banquet hall error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Admin - Delete Banquet Hall
+export const deleteBanquetHall = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const banquetHall = await BanquetHall.findByIdAndUpdate(
+      id,
+      { isActive: false },
+      { new: true }
+    );
+
+    if (!banquetHall) {
+      return res.status(404).json({
+        success: false,
+        message: 'Banquet hall not found',
+      });
+    }
+
+    logger.info(`Banquet hall deleted: ${banquetHall.name}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Banquet hall deleted successfully',
+    });
+  } catch (error) {
+    logger.error(`Delete banquet hall error: ${error.message}`);
+    next(error);
+  }
+};

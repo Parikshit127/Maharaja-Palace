@@ -1,51 +1,275 @@
-import React, { useState, useEffect } from 'react';
-import { authAPI } from '../api/api';
-import { Card } from '../components/BaseComponents';
+import { useState, useEffect } from 'react';
+import { authAPI, bookingAPI, banquetAPI, restaurantAPI } from '../api/api';
+import { Mail, Phone, Calendar, Loader, X, Eye } from 'lucide-react';
+import { showToast } from '../utils/toast';
 
 export const AdminUsers = () => {
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
+  const [users, setUsers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [userBookings, setUserBookings] = useState([]);
+  const [loadingBookings, setLoadingBookings] = useState(false);
 
-    useEffect(() => {
-        fetchUsers();
-    }, []);
+  useEffect(() => {
+    loadUsers();
+  }, []);
 
-    const fetchUsers = async () => {
-        try {
-            const response = await authAPI.getAllUsers();
-            setUsers(response.data.users);
-            setLoading(false);
-        } catch (error) {
-            console.error('Error fetching users:', error);
-            setLoading(false);
-        }
+  const loadUsers = async () => {
+    setLoading(true);
+    try {
+      const response = await authAPI.getAllUsers();
+      setUsers(response.data.users || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      showToast('Failed to load users', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleViewUser = async (user) => {
+    setSelectedUser(user);
+    setShowDetails(true);
+    await loadUserBookings(user._id);
+  };
+
+  const loadUserBookings = async (userId) => {
+    setLoadingBookings(true);
+    try {
+      // Fetch bookings from all sources
+      const [roomBookingsRes, banquetBookingsRes, restaurantBookingsRes] = await Promise.all([
+        bookingAPI.getUserBookings(userId).catch(() => ({ data: { bookings: [] } })),
+        banquetAPI.getAllBookings().catch(() => ({ data: { bookings: [] } })),
+        restaurantAPI.getAllBookings().catch(() => ({ data: { bookings: [] } })),
+      ]);
+
+      const roomBookings = (roomBookingsRes.data.bookings || []).map(b => ({ ...b, type: 'room' }));
+      
+      // Filter banquet and restaurant bookings for this user
+      const banquetBookings = (banquetBookingsRes.data.bookings || [])
+        .filter(b => b.guest?._id === userId)
+        .map(b => ({ ...b, type: 'banquet' }));
+      
+      const restaurantBookings = (restaurantBookingsRes.data.bookings || [])
+        .filter(b => b.guest?._id === userId)
+        .map(b => ({ ...b, type: 'restaurant' }));
+
+      const allBookings = [...roomBookings, ...banquetBookings, ...restaurantBookings]
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setUserBookings(allBookings);
+    } catch (error) {
+      console.error('Error loading user bookings:', error);
+      showToast('Failed to load user bookings', 'error');
+    } finally {
+      setLoadingBookings(false);
+    }
+  };
+
+  const getStatusColor = (status) => {
+    const colors = {
+      pending: 'bg-yellow-100 text-yellow-800',
+      confirmed: 'bg-green-100 text-green-800',
+      'checked-in': 'bg-blue-100 text-blue-800',
+      'checked-out': 'bg-gray-100 text-gray-800',
+      completed: 'bg-green-100 text-green-800',
+      cancelled: 'bg-red-100 text-red-800',
     };
+    return colors[status] || 'bg-gray-100 text-gray-800';
+  };
 
-    if (loading) return <div>Loading...</div>;
-
+  if (loading) {
     return (
-        <div>
-            <h2 className="text-2xl font-playfair text-gold mb-6">Manage Users</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {users.map(user => (
-                    <Card key={user._id}>
-                        <div className="flex items-center mb-4">
-                            <div className="w-12 h-12 bg-gold text-white rounded-full flex items-center justify-center text-xl font-bold mr-4">
-                                {user.firstName[0]}
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-lg">{user.firstName} {user.lastName}</h3>
-                                <p className="text-sm text-gray-600">{user.email}</p>
-                            </div>
-                        </div>
-                        <div className="border-t pt-4">
-                            <p className="text-sm"><span className="font-semibold">Role:</span> {user.role}</p>
-                            <p className="text-sm"><span className="font-semibold">Phone:</span> {user.phone}</p>
-                            <p className="text-sm"><span className="font-semibold">Joined:</span> {new Date(user.createdAt).toLocaleDateString()}</p>
-                        </div>
-                    </Card>
-                ))}
-            </div>
-        </div>
+      <div className="flex items-center justify-center py-20">
+        <Loader className="w-8 h-8 animate-spin text-[#B8860B]" />
+      </div>
     );
+  }
+
+  return (
+    <div>
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-2xl font-serif text-[#2a2a2a]">User Management</h2>
+        <p className="text-gray-600">{users.length} total users</p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {users.map((user) => (
+          <div
+            key={user._id}
+            className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"
+          >
+            <div className="flex items-center mb-4">
+              <div className="w-12 h-12 bg-[#B8860B] text-white rounded-full flex items-center justify-center text-xl font-bold mr-4">
+                {user.firstName?.[0]?.toUpperCase() || 'U'}
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg text-[#2a2a2a]">
+                  {user.firstName} {user.lastName}
+                </h3>
+                <span
+                  className={`inline-block px-2 py-1 rounded text-xs font-semibold ${
+                    user.role === 'admin'
+                      ? 'bg-purple-100 text-purple-800'
+                      : 'bg-blue-100 text-blue-800'
+                  }`}
+                >
+                  {user.role}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-2 mb-4">
+              <div className="flex items-center text-sm text-gray-600">
+                <Mail className="w-4 h-4 mr-2" />
+                <span className="truncate">{user.email}</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <Phone className="w-4 h-4 mr-2" />
+                <span>{user.phone || 'N/A'}</span>
+              </div>
+              <div className="flex items-center text-sm text-gray-600">
+                <Calendar className="w-4 h-4 mr-2" />
+                <span>Joined {new Date(user.createdAt).toLocaleDateString()}</span>
+              </div>
+            </div>
+
+            <button
+              onClick={() => handleViewUser(user)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-[#B8860B] text-white rounded-lg hover:bg-[#8B6914] transition-colors"
+            >
+              <Eye className="w-4 h-4" />
+              View Details
+            </button>
+          </div>
+        ))}
+      </div>
+
+      {/* User Details Modal */}
+      {showDetails && selectedUser && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-6">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex justify-between items-center">
+              <h3 className="text-xl font-serif text-[#2a2a2a]">User Details</h3>
+              <button
+                onClick={() => setShowDetails(false)}
+                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* User Info */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-500 mb-3">User Information</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-xs text-gray-500">Name</p>
+                    <p className="font-semibold">
+                      {selectedUser.firstName} {selectedUser.lastName}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Email</p>
+                    <p className="font-semibold">{selectedUser.email}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Phone</p>
+                    <p className="font-semibold">{selectedUser.phone || 'N/A'}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Role</p>
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                        selectedUser.role === 'admin'
+                          ? 'bg-purple-100 text-purple-800'
+                          : 'bg-blue-100 text-blue-800'
+                      }`}
+                    >
+                      {selectedUser.role}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-xs text-gray-500">Joined</p>
+                    <p className="font-semibold">
+                      {new Date(selectedUser.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Booking History */}
+              <div>
+                <h4 className="text-sm font-semibold text-gray-500 mb-3">Booking History</h4>
+                {loadingBookings ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader className="w-6 h-6 animate-spin text-[#B8860B]" />
+                  </div>
+                ) : userBookings.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No bookings found</p>
+                ) : (
+                  <div className="space-y-3">
+                    {userBookings.map((booking) => (
+                      <div
+                        key={booking._id}
+                        className="border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                      >
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <p className="font-mono text-sm font-semibold">
+                              {booking.bookingNumber}
+                            </p>
+                            <span className="inline-block px-2 py-1 bg-[#B8860B]/10 text-[#B8860B] rounded text-xs uppercase mt-1">
+                              {booking.type}
+                            </span>
+                          </div>
+                          <span
+                            className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusColor(
+                              booking.status
+                            )}`}
+                          >
+                            {booking.status}
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>
+                            <p className="text-gray-500">Date</p>
+                            <p className="font-semibold">
+                              {booking.checkInDate &&
+                                new Date(booking.checkInDate).toLocaleDateString()}
+                              {booking.eventDate &&
+                                new Date(booking.eventDate).toLocaleDateString()}
+                              {booking.bookingDate &&
+                                new Date(booking.bookingDate).toLocaleDateString()}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-gray-500">Amount</p>
+                            <p className="font-semibold text-[#B8860B]">
+                              ₹{booking.totalPrice?.toLocaleString() || 0}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div className="border-t border-gray-200 px-6 py-4">
+              <button
+                onClick={() => setShowDetails(false)}
+                className="w-full px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };

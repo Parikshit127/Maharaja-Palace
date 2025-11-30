@@ -148,7 +148,7 @@ export const getAvailableRooms = async (req, res, next) => {
 // Admin - Update Room Status
 export const updateRoomStatus = async (req, res, next) => {
   try {
-    const { roomId } = req.params;
+    const { id } = req.params;
     const { status } = req.body;
 
     if (!status) {
@@ -159,7 +159,7 @@ export const updateRoomStatus = async (req, res, next) => {
     }
 
     const room = await Room.findByIdAndUpdate(
-      roomId,
+      id,
       { status },
       { new: true }
     ).populate('roomType');
@@ -203,6 +203,130 @@ export const getRoomById = async (req, res, next) => {
     });
   } catch (error) {
     logger.error(`Get room by id error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Admin - Update Room Type
+export const updateRoomType = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { name, description, amenities, basePrice, maxOccupancy, squareFeet, features, images } = req.body;
+
+    const roomType = await RoomType.findByIdAndUpdate(
+      id,
+      { name, description, amenities, basePrice, maxOccupancy, squareFeet, features, images },
+      { new: true, runValidators: true }
+    );
+
+    if (!roomType) {
+      return res.status(404).json({
+        success: false,
+        message: 'Room type not found',
+      });
+    }
+
+    logger.info(`Room type updated: ${roomType.name}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Room type updated successfully',
+      roomType,
+    });
+  } catch (error) {
+    logger.error(`Update room type error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Admin - Delete Room Type
+export const deleteRoomType = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const roomType = await RoomType.findByIdAndUpdate(
+      id,
+      { isActive: false },
+      { new: true }
+    );
+
+    if (!roomType) {
+      return res.status(404).json({
+        success: false,
+        message: 'Room type not found',
+      });
+    }
+
+    logger.info(`Room type deleted: ${roomType.name}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Room type deleted successfully',
+    });
+  } catch (error) {
+    logger.error(`Delete room type error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Admin - Update Room
+export const updateRoom = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { roomNumber, roomType, floor, currentPrice, status } = req.body;
+
+    const room = await Room.findByIdAndUpdate(
+      id,
+      { roomNumber, roomType, floor, currentPrice, status },
+      { new: true, runValidators: true }
+    ).populate('roomType');
+
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: 'Room not found',
+      });
+    }
+
+    logger.info(`Room updated: ${room.roomNumber}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Room updated successfully',
+      room,
+    });
+  } catch (error) {
+    logger.error(`Update room error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Admin - Delete Room
+export const deleteRoom = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const room = await Room.findByIdAndUpdate(
+      id,
+      { isActive: false },
+      { new: true }
+    );
+
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: 'Room not found',
+      });
+    }
+
+    logger.info(`Room deleted: ${room.roomNumber}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Room deleted successfully',
+    });
+  } catch (error) {
+    logger.error(`Delete room error: ${error.message}`);
     next(error);
   }
 };

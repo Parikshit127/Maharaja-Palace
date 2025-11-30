@@ -5,7 +5,6 @@ const bookingSchema = new mongoose.Schema(
     bookingNumber: {
       type: String,
       unique: true,
-      required: true,
     },
     guest: {
       type: mongoose.Schema.Types.ObjectId,
@@ -72,8 +71,8 @@ const bookingSchema = new mongoose.Schema(
 );
 
 // Auto-generate booking number
-bookingSchema.pre('save', async function (next) {
-  if (this.isNew) {
+bookingSchema.pre('save', function (next) {
+  if (this.isNew && !this.bookingNumber) {
     const timestamp = Date.now();
     const random = Math.floor(Math.random() * 10000);
     this.bookingNumber = `BK-${timestamp}-${random}`;

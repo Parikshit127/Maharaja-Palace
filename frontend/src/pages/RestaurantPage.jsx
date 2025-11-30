@@ -158,14 +158,18 @@ const RestaurantPage = () => {
               A symphony of flavors, crafted by masters, served in palatial elegance
             </p>
             <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fadeInUp" style={{animationDelay: '0.9s'}}>
-              <button className="group relative px-10 py-5 bg-[#D4AF37] text-[#0B1A33] font-semibold tracking-wider overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-[#D4AF37]/50">
+              <button 
+                onClick={() => window.location.href = '/restaurant/book'}
+                className="group relative px-10 py-5 bg-[#D4AF37] text-[#0B1A33] font-semibold tracking-wider overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-[#D4AF37]/50">
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   RESERVE YOUR TABLE
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
                 </span>
                 <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
               </button>
-              <button className="px-10 py-5 border-2 border-white text-white font-semibold tracking-wider hover:bg-white hover:text-[#0B1A33] transition-all duration-500">
+              <button 
+                onClick={() => window.location.href = '/contact'}
+                className="px-10 py-5 border-2 border-white text-white font-semibold tracking-wider hover:bg-white hover:text-[#0B1A33] transition-all duration-500">
                 EXPLORE MENUS
               </button>
             </div>
@@ -308,7 +312,9 @@ const RestaurantPage = () => {
                     <p className="text-gray-700 font-medium text-lg">{restaurant.timing}</p>
                   </div>
 
-                  <button className="group relative px-10 py-5 bg-[#0B1A33] text-white font-semibold tracking-wider overflow-hidden transition-all duration-500 hover:shadow-2xl w-full sm:w-auto">
+                  <button 
+                    onClick={() => window.location.href = '/restaurant/book'}
+                    className="group relative px-10 py-5 bg-[#0B1A33] text-white font-semibold tracking-wider overflow-hidden transition-all duration-500 hover:shadow-2xl w-full sm:w-auto">
                     <span className="relative z-10 flex items-center justify-center gap-2">
                       RESERVE TABLE
                       <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
@@ -401,14 +407,18 @@ const RestaurantPage = () => {
             Reserve your table at Maharaja Palace today
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <button className="group relative px-12 py-6 bg-[#D4AF37] text-[#0B1A33] font-bold tracking-wider text-lg overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-[#D4AF37]/50">
+            <button 
+              onClick={() => window.location.href = '/restaurant/book'}
+              className="group relative px-12 py-6 bg-[#D4AF37] text-[#0B1A33] font-bold tracking-wider text-lg overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-[#D4AF37]/50">
               <span className="relative z-10 flex items-center justify-center gap-3">
                 BOOK NOW
                 <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
               </span>
               <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
             </button>
-            <button className="px-12 py-6 border-2 border-white text-white font-bold tracking-wider text-lg hover:bg-white hover:text-[#0B1A33] transition-all duration-500 flex items-center justify-center gap-3">
+            <button 
+              onClick={() => window.location.href = '/contact'}
+              className="px-12 py-6 border-2 border-white text-white font-bold tracking-wider text-lg hover:bg-white hover:text-[#0B1A33] transition-all duration-500 flex items-center justify-center gap-3">
               <Phone className="w-5 h-5" />
               CALL US
             </button>
@@ -416,7 +426,7 @@ const RestaurantPage = () => {
         </div>
       </section>
 
-      <style jsx>{`
+      <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bonheur+Royale&display=swap');
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         

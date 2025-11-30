@@ -14,6 +14,8 @@ import { RoomDetailsPage } from './pages/RoomDetailsPage';
 import { BookingPage } from './pages/BookingPage';
 import { BanquetPage } from './pages/BanquetPage';
 import RestaurantPage from './pages/RestaurantPage';
+import RestaurantBookingPage from './pages/RestaurantBookingPage';
+import BanquetBookingPage from './pages/BanquetBookingPage';
 import { AdminPage } from './pages/AdminPage';
 import { GalleryPage } from './pages/GalleryPage';
 import { AboutPage } from './pages/AboutPage';
@@ -38,6 +40,28 @@ function App() {
           <Route path="/banquet" element={<MainLayout><BanquetPage /></MainLayout>} />
           <Route path="/restaurant" element={<MainLayout><RestaurantPage /></MainLayout>} />
           <Route path="/booking" element={<MainLayout><BookingPage /></MainLayout>} />
+          
+          {/* Booking Pages - Protected */}
+          <Route
+            path="/restaurant/book"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <RestaurantBookingPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/banquet/book"
+            element={
+              <ProtectedRoute>
+                <MainLayout>
+                  <BanquetBookingPage />
+                </MainLayout>
+              </ProtectedRoute>
+            }
+          />
           <Route path="/gallery" element={<MainLayout><GalleryPage /></MainLayout>} />
           <Route path="/about" element={<MainLayout><AboutPage /></MainLayout>} />
           <Route path="/contact" element={<MainLayout><ContactPage /></MainLayout>} />

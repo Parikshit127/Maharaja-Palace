@@ -5,6 +5,8 @@ import {
   getAllBookings,
   getBookingDetails,
   cancelBooking,
+  updateBookingStatus,
+  getUserBookings,
 } from '../controllers/bookingController.js';
 import { protect, authorize } from '../middleware/auth.js';
 
@@ -18,5 +20,7 @@ router.put('/:bookingId/cancel', protect, cancelBooking);
 
 // Admin routes
 router.get('/', protect, authorize('admin'), getAllBookings);
+router.put('/:bookingId/status', protect, authorize('admin'), updateBookingStatus);
+router.get('/user/:userId', protect, authorize('admin'), getUserBookings);
 
 export default router;

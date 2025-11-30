@@ -126,7 +126,7 @@ export const BanquetPage = () => {
                 <Button 
                   variant="filled"
                   size="lg"
-                  onClick={() => window.location.href = `/booking?type=banquet&hallId=${hall._id}`}
+                  onClick={() => window.location.href = `/banquet/book?hallId=${hall._id}`}
                 >
                   Book This Hall
                 </Button>

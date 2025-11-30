@@ -1,12 +1,31 @@
 import React, { useState, useEffect, useRef } from "react";
+import { roomAPI } from '../api/api';
 
 export const RoomsPage = () => {
   const [activeRoom, setActiveRoom] = useState(null);
   const [visibleSections, setVisibleSections] = useState(new Set());
   const [activeImageIndexes, setActiveImageIndexes] = useState({});
+  const [roomTypes, setRoomTypes] = useState([]);
+  const [loading, setLoading] = useState(true);
   const sectionRefs = useRef([]);
 
   useEffect(() => {
+    const fetchRoomTypes = async () => {
+      try {
+        const response = await roomAPI.getRoomTypes();
+        setRoomTypes(response.data.roomTypes || []);
+      } catch (error) {
+        console.error('Error fetching room types:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchRoomTypes();
+  }, []);
+
+  useEffect(() => {
+    if (roomTypes.length === 0) return;
+    
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
@@ -28,89 +47,55 @@ export const RoomsPage = () => {
         if (ref) observer.unobserve(ref);
       });
     };
-  }, []);
+  }, [roomTypes]);
 
   // Auto-rotate images
   useEffect(() => {
+    if (roomCategories.length === 0) return;
+    
     const intervals = roomCategories.map((room, index) => {
+      if (!room.images || room.images.length === 0) return null;
       return setInterval(() => {
         setActiveImageIndexes((prev) => ({
           ...prev,
           [index]: ((prev[index] || 0) + 1) % room.images.length,
         }));
       }, 3000);
-    });
+    }).filter(Boolean);
 
-    return () => intervals.forEach(clearInterval);
-  }, []);
+    return () => intervals.forEach(interval => clearInterval(interval));
+  }, [roomTypes]);
 
-  const roomCategories = [
-    {
-      id: "khwabgah",
-      title: "KHWABGAH (Penthouse)",
-      subtitle: "For a regal experience!",
-      description:
-        "Khwabgah is a spacious royal chamber encompassing 2 bedrooms, a living room, a dining room, a separate bar, a private butler service and an office chamber with a private terrace.",
-      images: [
-        "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200",
-        "https://images.unsplash.com/photo-1629140727571-9b5c6f6267b4?w=1200",
-        "https://images.unsplash.com/photo-1631049552240-59c37f563fd5?w=1200",
-      ],
-      link: "/rooms/khwabgah",
-    },
-    {
-      id: "presidential",
-      title: "PRESIDENTIAL SUITE",
-      subtitle: "Unprecedented luxury coupled with bespoke services!",
-      description:
-        "Bedecked with demure interiors and soft lights, this suite is an epitome of effortless luxury coupled with immaculate services for bespoke experiences. Flaunting a regal décor, this centrally air-conditioned suite offers unparalleled comfort.",
-      images: [
-        "https://images.unsplash.com/photo-1611892440504-42a792e24d32?w=1200",
-        "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?w=1200",
-        "https://images.unsplash.com/photo-1596394516093-501ba68a0ba6?w=1200",
-      ],
-      link: "/rooms/presidential",
-    },
-    {
-      id: "heritage",
-      title: "HERITAGE SUITES",
-      subtitle: "Designed with a dash of majestic past!",
-      description:
-        "These graceful suites offer the best of both worlds – luxury and comfort in Karnal. These suites have a bedroom, which have been opulently furnished with modern comforts and Indian art forms.",
-      images: [
-        "https://images.unsplash.com/photo-1582719508461-905c673771fd?w=1200",
-        "https://images.unsplash.com/photo-1591088398332-8a7791972843?w=1200",
-        "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=1200",
-      ],
-      link: "/rooms/heritage",
-    },
-    {
-      id: "club-royal",
-      title: "CLUB ROYAL ROOMS",
-      subtitle: "Intimate luxury and personalized care!",
-      description:
-        "These well appointed rooms are adorned by vibrant upholstery that represents a rich royal history of the land & subtle interiors. They have an array of modern amenities to facilitate a luxurious stay for the guests.",
-      images: [
-        "https://images.unsplash.com/photo-1566665797739-1674de7a421a?w=1200",
-        "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=1200",
-        "https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=1200",
-      ],
-      link: "/rooms/club-royal",
-    },
-    {
-      id: "club",
-      title: "CLUB ROOMS",
-      subtitle: "Flawlessly comfortable!",
-      description:
-        "Beautifully bedecked with aesthetically pleasing interiors, these rooms offer a beautiful view. Pleasant sceneries adorn the pastel walls of the room. They are furnished with all the modern comforts providing an authentic royal experience at Noormahal.",
-      images: [
-        "https://images.unsplash.com/photo-1631049035182-249067d7618e?w=1200",
-        "https://images.unsplash.com/photo-1595576508898-0ad5c879a061?w=1200",
-        "https://images.unsplash.com/photo-1512918728675-ed5a9ecdebfd?w=1200",
-      ],
-      link: "/rooms/club",
-    },
-  ];
+  const getSubtitle = (name) => {
+    const subtitles = {
+      'KHWABGAH (Penthouse)': 'For a regal experience!',
+      'PRESIDENTIAL SUITE': 'Unprecedented luxury coupled with bespoke services!',
+      'HERITAGE SUITES': 'Designed with a dash of majestic past!',
+      'CLUB ROYAL ROOMS': 'Intimate luxury and personalized care!',
+      'CLUB ROOMS': 'Flawlessly comfortable!',
+    };
+    return subtitles[name] || 'Luxury accommodation';
+  };
+
+  const roomCategories = roomTypes.map(rt => ({
+    id: rt._id,
+    title: rt.name,
+    subtitle: getSubtitle(rt.name),
+    description: rt.description,
+    images: rt.images?.map(img => img.url) || [],
+    link: `/rooms/${rt._id}`,
+  }));
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#faf9f6] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-[#B8860B] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-[#B8860B] font-semibold">Loading rooms...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#faf9f6]">

@@ -13,9 +13,14 @@ export const AuthProvider = ({ children }) => {
       if (storedToken) {
         try {
           // Verify token by fetching user profile
-          const response = await import('../api/api').then(module => module.authAPI.getMe());
-          setUser(response.data.user);
-          setToken(storedToken);
+          const { authAPI } = await import('../api/api');
+          const response = await authAPI.getMe();
+          if (response.data.success) {
+            setUser(response.data.user);
+            setToken(storedToken);
+          } else {
+            throw new Error('Invalid token');
+          }
         } catch (error) {
           console.error('Token verification failed:', error);
           localStorage.removeItem('token');

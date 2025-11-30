@@ -164,3 +164,62 @@ export const cancelBooking = async (req, res, next) => {
     next(error);
   }
 };
+
+// Admin - Update Booking Status
+export const updateBookingStatus = async (req, res, next) => {
+  try {
+    const { bookingId } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide status',
+      });
+    }
+
+    const booking = await Booking.findByIdAndUpdate(
+      bookingId,
+      { status },
+      { new: true }
+    ).populate(['guest', 'room']);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found',
+      });
+    }
+
+    logger.info(`Booking status updated: ${booking.bookingNumber} - ${status}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Booking status updated successfully',
+      booking,
+    });
+  } catch (error) {
+    logger.error(`Update booking status error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Admin - Get User Bookings
+export const getUserBookings = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const bookings = await Booking.find({ guest: userId })
+      .populate('room')
+      .sort('-createdAt');
+
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      bookings,
+    });
+  } catch (error) {
+    logger.error(`Get user bookings error: ${error.message}`);
+    next(error);
+  }
+};

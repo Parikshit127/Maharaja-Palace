@@ -144,3 +144,65 @@ export const getAllRestaurantBookings = async (req, res, next) => {
     next(error);
   }
 };
+
+// Admin - Update Restaurant Table
+export const updateRestaurantTable = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { tableNumber, capacity, location, description, features, status } = req.body;
+
+    const table = await RestaurantTable.findByIdAndUpdate(
+      id,
+      { tableNumber, capacity, location, description, features, status },
+      { new: true, runValidators: true }
+    );
+
+    if (!table) {
+      return res.status(404).json({
+        success: false,
+        message: 'Table not found',
+      });
+    }
+
+    logger.info(`Restaurant table updated: ${table.tableNumber}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Restaurant table updated successfully',
+      table,
+    });
+  } catch (error) {
+    logger.error(`Update restaurant table error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Admin - Delete Restaurant Table
+export const deleteRestaurantTable = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const table = await RestaurantTable.findByIdAndUpdate(
+      id,
+      { isActive: false },
+      { new: true }
+    );
+
+    if (!table) {
+      return res.status(404).json({
+        success: false,
+        message: 'Table not found',
+      });
+    }
+
+    logger.info(`Restaurant table deleted: ${table.tableNumber}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Restaurant table deleted successfully',
+    });
+  } catch (error) {
+    logger.error(`Delete restaurant table error: ${error.message}`);
+    next(error);
+  }
+};

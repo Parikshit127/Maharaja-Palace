@@ -170,3 +170,87 @@ export const getAllUsers = async (req, res, next) => {
     next(error);
   }
 };
+
+// Admin - Get User Details
+export const getUserDetails = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user,
+    });
+  } catch (error) {
+    logger.error(`Get user details error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Admin - Update User
+export const updateUser = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { firstName, lastName, email, phone, role } = req.body;
+
+    const user = await User.findByIdAndUpdate(
+      id,
+      { firstName, lastName, email, phone, role },
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    logger.info(`User updated: ${user.email}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'User updated successfully',
+      user,
+    });
+  } catch (error) {
+    logger.error(`Update user error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Admin - Toggle User Status
+export const toggleUserStatus = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found',
+      });
+    }
+
+    user.isActive = !user.isActive;
+    await user.save();
+
+    logger.info(`User status toggled: ${user.email} - ${user.isActive ? 'active' : 'inactive'}`);
+
+    res.status(200).json({
+      success: true,
+      message: `User ${user.isActive ? 'activated' : 'deactivated'} successfully`,
+      user,
+    });
+  } catch (error) {
+    logger.error(`Toggle user status error: ${error.message}`);
+    next(error);
+  }
+};
