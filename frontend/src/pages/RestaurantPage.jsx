@@ -138,11 +138,11 @@ const RestaurantPage = () => {
         <div 
           className="absolute inset-0 bg-cover bg-center"
           style={{ 
-            backgroundImage: 'url(https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1600)',
+            backgroundImage: 'url(https://images.unsplash.com/photo-1544148103-0773bf10d330?w=1600)',
             transform: `translateY(${parallaxOffset}px)`
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60"></div>
         </div>
         
         <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6">
@@ -151,7 +151,7 @@ const RestaurantPage = () => {
             <p className="text-sm uppercase tracking-[0.4em] text-[#D4AF37] mb-4 animate-fadeIn" style={{animationDelay: '0.3s'}}>
               Culinary Artistry Since 1947
             </p>
-            <h1 className="bonheur-royale-regular text-7xl md:text-9xl text-white mb-6 tracking-tight animate-fadeInUp" style={{animationDelay: '0.5s'}}>
+            <h1 className="royal-title text-7xl md:text-9xl text-white mb-6 tracking-tight animate-fadeInUp" style={{animationDelay: '0.5s'}}>
               Exquisite Dining
             </h1>
             <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-12 font-light leading-relaxed animate-fadeInUp" style={{animationDelay: '0.7s'}}>
@@ -175,13 +175,6 @@ const RestaurantPage = () => {
             </div>
           </div>
         </div>
-
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white/50 rounded-full mt-2 animate-pulse"></div>
-          </div>
-        </div>
       </section>
 
       {/* Introduction Section */}
@@ -194,7 +187,7 @@ const RestaurantPage = () => {
         <div className="max-w-5xl mx-auto text-center relative z-10">
           <div className="w-20 h-[2px] bg-[#D4AF37] mx-auto mb-8"></div>
           <p className="text-sm uppercase tracking-[0.4em] text-[#D4AF37] mb-6">A Gastronomic Legacy</p>
-          <h2 className="bonheur-royale-regular text-5xl md:text-7xl text-[#0B1A33] mb-8 leading-tight">
+          <h2 className="royal-title text-5xl md:text-7xl text-[#0B1A33] mb-8 leading-tight">
             Where Royalty Dines
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto">
@@ -235,7 +228,7 @@ const RestaurantPage = () => {
           <div className="text-center mb-20">
             <div className="w-20 h-[2px] bg-[#D4AF37] mx-auto mb-8"></div>
             <p className="text-sm uppercase tracking-[0.4em] text-[#D4AF37] mb-6">Our Destinations</p>
-            <h2 className="bonheur-royale-regular text-5xl md:text-7xl text-[#0B1A33] leading-tight">
+            <h2 className="royal-title text-5xl md:text-7xl text-[#0B1A33] leading-tight">
               Signature Restaurants
             </h2>
           </div>
@@ -275,7 +268,7 @@ const RestaurantPage = () => {
                 <div className={`${index % 2 === 1 ? 'lg:col-start-1 lg:row-start-1' : ''} space-y-8`}>
                   <div>
                     <div className="w-16 h-[2px] bg-[#D4AF37] mb-6"></div>
-                    <h3 className="bonheur-royale-regular text-5xl md:text-6xl text-[#0B1A33] mb-4 tracking-tight leading-tight">
+                    <h3 className="royal-title text-5xl md:text-6xl text-[#0B1A33] mb-4 tracking-tight leading-tight">
                       {restaurant.name}
                     </h3>
                   </div>
@@ -337,7 +330,7 @@ const RestaurantPage = () => {
         <div className="max-w-5xl mx-auto px-6 relative z-10">
           <div className="text-center mb-16">
             <div className="w-20 h-[2px] bg-[#D4AF37] mx-auto mb-8"></div>
-            <h2 className="bonheur-royale-regular text-6xl text-white mb-4">Guest Testimonials</h2>
+            <h2 className="royal-title text-6xl text-white mb-4">Guest Testimonials</h2>
             <p className="text-gray-400 text-lg">What our distinguished guests say</p>
           </div>
 
@@ -400,7 +393,7 @@ const RestaurantPage = () => {
         
         <div className="relative z-10 text-center text-white px-6 max-w-4xl mx-auto">
           <div className="w-20 h-[1px] bg-[#D4AF37] mx-auto mb-8"></div>
-          <h2 className="bonheur-royale-regular text-6xl md:text-8xl mb-8 tracking-tight leading-tight">
+          <h2 className="royal-title text-6xl md:text-8xl mb-8 tracking-tight leading-tight">
             Begin Your Culinary Journey
           </h2>
           <p className="text-2xl mb-12 font-light text-gray-300">
@@ -427,21 +420,15 @@ const RestaurantPage = () => {
       </section>
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bonheur+Royale&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-        
-        * {
-          font-family: 'Inter', sans-serif;
-        }
-        
-        .bonheur-royale-regular {
-          font-family: "Bonheur Royale", cursive;
-          font-weight: 400;
-          font-style: normal;
+        .royal-title {
+          font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif;
+          font-weight: 600;
+          font-style: italic;
+          letter-spacing: 0.02em;
         }
         
         h4, .font-serif {
-          font-family: 'Inter', sans-serif;
+          font-family: 'Playfair Display', Georgia, serif;
           font-weight: 600;
         }
 

@@ -1,78 +1,100 @@
-# Home Page Buttons - Navigation Fixed
+# Room Pages Updated with Correct Information
 
-## Overview
-All buttons on the home page have been connected to their respective routes using React Router's `useNavigate` hook.
+## Summary
+Updated RoomsPage.jsx and RoomDetailsPage.jsx with the correct room categories and information for Maharaja Palace.
 
-## Fixed Buttons
+## Changes Made
 
-### 1. Welcome Section Buttons
-- **"Explore Rooms"** → `/rooms` - Browse available rooms
-- **"Our Story"** → `/about` - Learn about the hotel
+### 1. RoomsPage.jsx
+- **Updated Room Categories**: Changed from old categories to new ones:
+  - Maharaja Suite (80 sq. m.) - SUITE ROOM
+  - Maharani Suite (75 sq. m.) - SUITE ROOM
+  - Yuvraj Suite (64 sq. m.) - SUITE ROOM
+  - Executive Room (32 sq. m.) - ROOM CATEGORY
+  - Standard Room (22 sq. m.) - ROOM CATEGORY
 
-### 2. Services Section Cards (Clickable)
-- **"Luxurious Suites"** → `/rooms` - View room options
-- **"Banquet Halls"** → `/banquet` - Explore banquet facilities
-- **"Fine Dining"** → `/restaurant` - Check restaurant offerings
+- **Updated Introduction Section**:
+  - New heading: "Experience Heritage Luxury"
+  - New description emphasizing royal heritage and modern comfort
+  - Removed outdated text about 125 rooms
 
-### 3. Gallery Section Button
-- **"View Full Gallery"** → `/gallery` - See complete photo gallery
+- **Updated Subtitles**: Each room now has accurate, descriptive subtitles matching the provided content
 
-### 4. CTA Section Buttons (Bottom of page)
-- **"Book Your Stay"** → `/rooms` - Start booking process
-- **"Contact Us"** → `/contact` - Get in touch with the hotel
-
-## Implementation Details
-
-### Changes Made:
-1. Added `useNavigate` hook from `react-router-dom`
-2. Created `navigate` instance in the HomePage component
-3. Added `onClick` handlers to all Button components
-4. Added `onClick` handlers to ImageCard components
-
-### Code Example:
-```javascript
-import { useNavigate } from 'react-router-dom';
-
-export function HomePage() {
-  const navigate = useNavigate();
+### 2. RoomDetailsPage.jsx
+- **Added Room Category Labels**: Shows "SUITE ROOM" or "ROOM CATEGORY" above room name
+- **Added getRoomDetails Function**: Returns accurate size and features for each room type
+- **Updated Features/Amenities**: Each room now displays its specific features:
   
-  // Button usage
-  <Button onClick={() => navigate('/rooms')}>
-    Explore Rooms
-  </Button>
-}
-```
+  **Maharaja Suite (80 sq. m.)**:
+  - King-size bed with handcrafted décor
+  - Marble bathroom with soaking tub
+  - Elegant living area
+  - Palace views
+  - Butler service
+  - Royal artefacts
+  - Modern amenities
 
-## Available Routes
+  **Maharani Suite (75 sq. m.)**:
+  - King-size bed with fine linen
+  - Lavish marble bathroom
+  - Cozy living area
+  - Garden views
+  - Butler service
+  - Handcrafted artefacts
+  - Modern amenities
 
-Based on the App.jsx routing configuration:
+  **Yuvraj Suite (64 sq. m.)**:
+  - King-size bed with handcrafted décor
+  - Marble bathroom with soaking tub
+  - Elegant living area
+  - Palace views
+  - Butler service
+  - Royal artefacts
+  - Modern amenities
 
-### Public Routes:
-- `/` - Home page
-- `/rooms` - Browse rooms
-- `/rooms/:id` - Room details
-- `/banquet` - Banquet halls
-- `/restaurant` - Restaurant
-- `/gallery` - Photo gallery
-- `/about` - About page
-- `/contact` - Contact page
-- `/login` - Login page
-- `/register` - Register page
+  **Executive Room (32 sq. m.)**:
+  - King-size or twin beds
+  - Contemporary bathroom
+  - Seating area for work
+  - Garden views
+  - Butler service
+  - Modern amenities
 
-### Protected Routes (Require Login):
-- `/dashboard` - User dashboard
-- `/restaurant/book` - Restaurant booking
-- `/banquet/book` - Banquet booking
+  **Standard Room (22 sq. m.)**:
+  - Queen-size or twin beds
+  - Modern bathroom
+  - Cozy seating area
+  - Garden views
+  - High-speed Wi-Fi
+  - Heritage décor
 
-### Admin Routes (Require Admin Role):
-- `/admin` - Admin portal
+- **Cleaned Up Imports**: Removed unused icon imports (Wifi, Coffee, Tv, Wind, Bath)
+
+## Room Information Structure
+
+All rooms now follow the correct structure from your provided content:
+
+1. **Category Label** (SUITE ROOM / ROOM CATEGORY)
+2. **Room Name** (Maharaja Suite, Maharani Suite, etc.)
+3. **Subtitle** (Descriptive tagline)
+4. **Size** (Accurate square meters)
+5. **Features List** (Specific amenities for each room type)
+6. **Book Now Button**
+
+## Visual Improvements
+
+- Category labels in gold (#D4AF37) with uppercase tracking
+- Consistent typography using serif fonts
+- Proper hierarchy: Category → Name → Subtitle
+- Feature lists with checkmarks for better readability
+- Accurate room sizes displayed prominently
 
 ## Testing
 
-To test the navigation:
-1. Visit the home page
-2. Click any button or card
-3. Verify you're redirected to the correct page
-4. Use browser back button to return to home page
+✅ No diagnostic errors
+✅ All imports cleaned up
+✅ Proper data structure maintained
+✅ Responsive design preserved
+✅ Booking functionality intact
 
-All buttons should now work correctly and navigate to their intended destinations!
+The room pages now accurately reflect the luxury accommodations at Maharaja Palace with correct categories, sizes, and features!

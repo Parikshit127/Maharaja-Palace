@@ -1,7 +1,6 @@
 import React from 'react';
 import { Navbar } from '../components/Navbar';
 import { Footer } from '../components/Footer';
-import { MarqueeSection } from '../components/MarqueeSection';
 
 export const MainLayout = ({ children }) => {
   return (
@@ -10,8 +9,6 @@ export const MainLayout = ({ children }) => {
       <main className="flex-grow">
         {children}
       </main>
-      {/* Marquee Animation Above Footer */}
-      <MarqueeSection />
       <Footer />
     </div>
   );

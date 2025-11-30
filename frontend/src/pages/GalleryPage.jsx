@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export const GalleryPage = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -35,13 +35,47 @@ export const GalleryPage = () => {
     return () => items.forEach((item) => observerRef.current?.unobserve(item));
   }, [selectedCategory]);
 
+  // Professional SVG icons for categories
+  const categoryIcons = {
+    all: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+      </svg>
+    ),
+    rooms: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+      </svg>
+    ),
+    dining: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 3v18M8 3v3a4 4 0 004 4M8 3H6m10 0v3a4 4 0 01-4 4m4-7h2M3 21h18" />
+      </svg>
+    ),
+    banquet: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+      </svg>
+    ),
+    exterior: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z" />
+      </svg>
+    ),
+    events: (
+      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+      </svg>
+    )
+  };
+
   const categories = [
-    { id: 'all', name: 'All Photos', icon: '✦' },
-    { id: 'rooms', name: 'Rooms & Suites', icon: '🛏' },
-    { id: 'dining', name: 'Dining', icon: '🍽' },
-    { id: 'banquet', name: 'Banquet Halls', icon: '🏛' },
-    { id: 'exterior', name: 'Exteriors', icon: '🏰' },
-    { id: 'events', name: 'Events', icon: '🎉' }
+    { id: 'all', name: 'All Photos' },
+    { id: 'rooms', name: 'Rooms & Suites' },
+    { id: 'dining', name: 'Dining' },
+    { id: 'banquet', name: 'Banquet Halls' },
+    { id: 'exterior', name: 'Exteriors' },
+    { id: 'events', name: 'Events' }
   ];
 
   const galleryImages = [
@@ -100,8 +134,7 @@ export const GalleryPage = () => {
   return (
     <div className="bg-[#FBF9F4] min-h-screen overflow-x-hidden">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bonheur+Royale&display=swap');
-        .bonheur-royale { font-family: "Bonheur Royale", cursive; font-weight: 400; }
+        .royal-title { font-family: 'Playfair Display', 'Cormorant Garamond', Georgia, serif; font-weight: 600; font-style: italic; letter-spacing: 0.02em; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         .animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
@@ -111,20 +144,15 @@ export const GalleryPage = () => {
       {/* Hero Section */}
       <section className="relative h-screen overflow-hidden">
         <div className="absolute inset-0 scale-110" style={{ transform: `translateY(${parallaxOffset}px) scale(1.1)` }}>
-          <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920" alt="Gallery Hero" className="w-full h-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/50 via-[#1a1a1a]/30 to-[#FBF9F4]" />
+          <img src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920" alt="Gallery Hero" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/60 via-[#1a1a1a]/40 to-[#1a1a1a]/60" />
         </div>
         <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6" style={{ transform: `translateY(${scrollY * 0.2}px)` }}>
           <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#B8860B] to-transparent mx-auto mb-8" />
           <p className="text-sm uppercase tracking-[0.5em] text-[#B8860B] mb-6 font-light">Visual Journey</p>
-          <h1 className="bonheur-royale text-7xl md:text-9xl text-white mb-6 tracking-wide drop-shadow-lg">Gallery</h1>
+          <h1 className="royal-title text-7xl md:text-9xl text-white mb-6 tracking-wide drop-shadow-lg">Gallery</h1>
           <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">A curated collection of moments that define royal elegance</p>
           <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#B8860B] to-transparent mx-auto mt-8" />
-        </div>
-        <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce">
-          <div className="w-8 h-14 border-2 border-[#B8860B]/50 rounded-full flex justify-center pt-2">
-            <div className="w-1.5 h-4 bg-[#B8860B] rounded-full animate-pulse" />
-          </div>
         </div>
       </section>
 
@@ -151,7 +179,7 @@ export const GalleryPage = () => {
               className={`group relative px-8 py-4 transition-all duration-500 text-sm uppercase tracking-wider overflow-hidden rounded-lg ${selectedCategory === category.id ? 'text-white shadow-lg' : 'text-[#5a5a5a] hover:text-[#B8860B]'}`}
               style={{ transform: selectedCategory === category.id ? 'translateY(-4px)' : 'translateY(0)' }}>
               <span className={`absolute inset-0 transition-all duration-500 rounded-lg ${selectedCategory === category.id ? 'bg-gradient-to-r from-[#B8860B] to-[#D4AF37] opacity-100' : 'bg-white border border-[#B8860B]/30 opacity-100 group-hover:border-[#B8860B]'}`} />
-              <span className="relative z-10 flex items-center gap-2"><span className="text-lg">{category.icon}</span>{category.name}</span>
+              <span className="relative z-10 flex items-center gap-2">{categoryIcons[category.id]}{category.name}</span>
             </button>
           ))}
         </div>
@@ -172,7 +200,7 @@ export const GalleryPage = () => {
                 <div className="absolute top-4 left-4 w-8 h-8 border-l-2 border-t-2 border-[#B8860B]/0 group-hover:border-[#B8860B] transition-all duration-500 transform group-hover:translate-x-0 group-hover:translate-y-0 -translate-x-2 -translate-y-2 rounded-tl-lg" />
                 <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-[#B8860B]/0 group-hover:border-[#B8860B] transition-all duration-500 transform group-hover:translate-x-0 group-hover:translate-y-0 translate-x-2 translate-y-2 rounded-br-lg" />
                 <div className="absolute bottom-0 left-0 right-0 p-6 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                  <p className="bonheur-royale text-3xl text-white mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 drop-shadow-lg">{item.title}</p>
+                  <p className="royal-title text-3xl text-white mb-1 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100 drop-shadow-lg">{item.title}</p>
                   <p className="text-white/80 text-sm font-light opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-200">{item.desc}</p>
                 </div>
                 <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-[#B8860B]/30 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 transition-all duration-500">
@@ -203,7 +231,7 @@ export const GalleryPage = () => {
               <div className="absolute inset-0 border-2 border-[#B8860B]/30 rounded-2xl pointer-events-none" />
             </div>
             <div className="text-center mt-8 animate-fadeInUp">
-              <h3 className="bonheur-royale text-4xl text-[#2a2a2a] mb-2">{lightboxImage.title}</h3>
+              <h3 className="royal-title text-4xl text-[#2a2a2a] mb-2">{lightboxImage.title}</h3>
               <p className="text-[#6a6a6a] font-light">{lightboxImage.desc}</p>
             </div>
             <div className="mt-6 flex items-center gap-2">
@@ -224,7 +252,7 @@ export const GalleryPage = () => {
         <div className="relative z-10 max-w-4xl mx-auto px-6 text-center">
           <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent mx-auto mb-8" />
           <p className="text-sm uppercase tracking-[0.4em] text-[#D4AF37] mb-6">Experience It Yourself</p>
-          <h2 className="bonheur-royale text-5xl md:text-7xl text-white mb-8">Visit Maharaja Palace</h2>
+          <h2 className="royal-title text-5xl md:text-7xl text-white mb-8">Visit Maharaja Palace</h2>
           <p className="text-xl text-white/80 max-w-2xl mx-auto mb-12 font-light leading-relaxed">Pictures capture moments, but memories are made in person. Come experience the grandeur and hospitality that awaits you.</p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <a href="/rooms" className="group relative px-12 py-5 overflow-hidden rounded-lg">

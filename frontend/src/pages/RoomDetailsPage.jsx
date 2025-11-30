@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { roomAPI } from '../api/api';
-import { Calendar, Users, Wifi, Coffee, Tv, Wind, Bath, Bed, ChevronLeft, ChevronRight, Star, Check } from 'lucide-react';
+import { Calendar, Users, Bed, ChevronLeft, ChevronRight, Star, Check } from 'lucide-react';
 
 export const RoomDetailsPage = () => {
   const { id } = useParams();
@@ -21,6 +21,7 @@ export const RoomDetailsPage = () => {
         const response = await roomAPI.getRoomTypes();
         const roomType = response.data.roomTypes.find(rt => rt._id === id);
         if (roomType) {
+          const roomDetails = getRoomDetails(roomType.name);
           setRoom({
             id: roomType._id,
             name: roomType.name,
@@ -29,8 +30,9 @@ export const RoomDetailsPage = () => {
             images: roomType.images?.map(img => img.url) || [],
             price: roomType.basePrice,
             maxGuests: roomType.maxOccupancy,
-            size: `${roomType.squareFeet} sq ft`,
-            amenities: roomType.amenities || [],
+            size: roomDetails.size,
+            amenities: roomDetails.features,
+            category: roomType.name.includes('Suite') ? 'SUITE ROOM' : 'ROOM CATEGORY'
           });
         }
       } catch (error) {
@@ -44,13 +46,78 @@ export const RoomDetailsPage = () => {
 
   const getSubtitle = (name) => {
     const subtitles = {
-      'KHWABGAH (Penthouse)': 'For a regal experience!',
-      'PRESIDENTIAL SUITE': 'Unprecedented luxury coupled with bespoke services!',
-      'HERITAGE SUITES': 'Designed with a dash of majestic past!',
-      'CLUB ROYAL ROOMS': 'Intimate luxury and personalized care!',
-      'CLUB ROOMS': 'Flawlessly comfortable!',
+      'Maharaja Suite': 'Step into timeless elegance where royal charm meets modern luxury',
+      'Maharani Suite': 'Graceful, elegant, and timeless — a sanctuary of regal femininity',
+      'Yuvraj Suite': 'Dynamic and stylish, blending youthful energy with refined heritage',
+      'Executive Room': 'Designed for comfort and convenience with subtle heritage charm',
+      'Standard Room': 'Compact yet inviting with tasteful heritage-inspired touches',
     };
     return subtitles[name] || 'Luxury accommodation';
+  };
+
+  const getRoomDetails = (name) => {
+    const details = {
+      'Maharaja Suite': {
+        size: '80 sq. m.',
+        features: [
+          'King-size bed with handcrafted décor',
+          'Marble bathroom with soaking tub and premium amenities',
+          'Elegant living area for relaxation or dining',
+          'Large windows with courtyard or palace views',
+          'Personalized butler service',
+          'Curated artefacts reflecting royal legacy',
+          'Modern amenities including Wi-Fi and minibar'
+        ]
+      },
+      'Maharani Suite': {
+        size: '75 sq. m.',
+        features: [
+          'King-size bed with fine linen and artisanal décor',
+          'Lavish marble bathroom with soaking tub and premium amenities',
+          'Cozy living area ideal for leisure or intimate dining',
+          'Large windows with soothing courtyard or garden views',
+          'Personalized butler service',
+          'Handcrafted artefacts celebrating royal elegance',
+          'Modern amenities including Wi-Fi and minibar'
+        ]
+      },
+      'Yuvraj Suite': {
+        size: '64 sq. m.',
+        features: [
+          'King-size bed with handcrafted décor',
+          'Marble bathroom with soaking tub and premium amenities',
+          'Elegant living area for relaxation or dining',
+          'Large windows with courtyard or palace views',
+          'Personalized butler service',
+          'Curated artefacts reflecting royal legacy',
+          'Modern amenities including Wi-Fi and minibar'
+        ]
+      },
+      'Executive Room': {
+        size: '32 sq. m.',
+        features: [
+          'Plush king-size or twin beds',
+          'Contemporary bathroom with premium amenities',
+          'Comfortable seating area for work or relaxation',
+          'Large windows with courtyard or garden views',
+          'Personalized butler service',
+          'Curated artefacts reflecting royal legacy',
+          'Modern amenities including Wi-Fi and minibar'
+        ]
+      },
+      'Standard Room': {
+        size: '22 sq. m.',
+        features: [
+          'Comfortable queen-size or twin beds',
+          'Modern bathroom with premium amenities',
+          'Cozy seating area for relaxation',
+          'Windows with courtyard or garden views',
+          'High-speed Wi-Fi and essential in-room facilities',
+          'Subtle décor reflecting heritage charm'
+        ]
+      }
+    };
+    return details[name] || { size: 'N/A', features: [] };
   };
 
   useEffect(() => {
@@ -161,6 +228,7 @@ export const RoomDetailsPage = () => {
         {/* Room Title Overlay */}
         <div className="absolute bottom-0 left-0 right-0 p-8 z-10">
           <div className="max-w-7xl mx-auto">
+            <p className="text-sm uppercase tracking-[0.3em] text-[#D4AF37] mb-2">{room.category}</p>
             <h1 className="text-5xl md:text-6xl font-serif text-white mb-2">{room.name}</h1>
             <p className="text-xl text-white/90 italic">{room.subtitle}</p>
           </div>
