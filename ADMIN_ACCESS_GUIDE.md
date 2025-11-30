@@ -19,7 +19,8 @@ Password: admin123
 cd backend
 npm run dev
 ```
-✅ Backend runs on: http://localhost:5002
+✅ Backend runs on: http://localhost:5000
+
 
 **Frontend:**
 ```bash
@@ -377,7 +378,7 @@ Create an admin endpoint to promote users to admin role.
 
 ## 🚀 Quick Start Checklist
 
-- [ ] Backend server running (port 5002)
+- [ ] Backend server running (port 5000)
 - [ ] Frontend server running (port 5173)
 - [ ] MongoDB connected
 - [ ] Admin user created (run seed script)

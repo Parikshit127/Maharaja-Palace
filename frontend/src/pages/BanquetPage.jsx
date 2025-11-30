@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { SectionTitle } from "../components/BaseComponents";
 import { ArrowLeft, ArrowRight } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const BanquetPage = () => {
   const [scrollY, setScrollY] = useState(0);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -121,20 +123,18 @@ export const BanquetPage = () => {
     setCurrentReview((prev) => (prev + 1) % reviews.length);
   };
 
-  const prevReview = () => {
-    setCurrentReview((prev) =>
-      prev === 0 ? reviews.length - 1 : prev - 1
-    );
+  const prevReviewReview = () => {
+    setCurrentReview((prev) => (prev === 0 ? reviews.length - 1 : prev - 1));
   };
 
   const openLightbox = (hall) => {
     setLightboxHall(hall);
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
   };
 
   const closeLightbox = () => {
     setLightboxHall(null);
-    document.body.style.overflow = 'unset';
+    document.body.style.overflow = "unset";
   };
 
   // Handle card click - center card opens lightbox, side cards become center
@@ -215,7 +215,10 @@ export const BanquetPage = () => {
       </section>
 
       {/* ========= CAROUSEL ========= */}
-      <section id="banquet-slider" className="max-w-7xl mx-auto px-4 sm:px-6 mb-20">
+      <section
+        id="banquet-slider"
+        className="max-w-7xl mx-auto px-4 sm:px-6 mb-20"
+      >
         <SectionTitle subtitle="Signature Venues">
           <span className="font-royal">Explore Our Banquet Collection</span>
         </SectionTitle>
@@ -223,7 +226,7 @@ export const BanquetPage = () => {
         <div className="relative mt-8 sm:mt-12">
           {/* Mobile: Single card view */}
           <div className="block lg:hidden">
-            <div 
+            <div
               onClick={() => openLightbox(halls[currentIndex])}
               className="group relative bg-white rounded-2xl sm:rounded-3xl shadow-xl overflow-hidden mx-auto max-w-md cursor-pointer transition-all duration-500 hover:shadow-2xl hover:scale-[1.02] hover:-translate-y-2"
             >
@@ -260,6 +263,19 @@ export const BanquetPage = () => {
                     </p>
                   </div>
                 </div>
+
+                {/* Mobile Book Banquet button */}
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    navigate(
+                      `/banquet-booking?hallId=${halls[currentIndex].id}`
+                    );
+                  }}
+                  className="mt-5 w-full bg-gold text-white py-3 rounded-lg text-sm uppercase tracking-wider hover:bg-darkGold transition"
+                >
+                  Book Banquet
+                </button>
               </div>
             </div>
 
@@ -271,7 +287,7 @@ export const BanquetPage = () => {
               >
                 <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-800" />
               </button>
-              
+
               {/* Dots indicator */}
               <div className="flex items-center gap-2">
                 {halls.map((_, idx) => (
@@ -316,7 +332,9 @@ export const BanquetPage = () => {
                         src={hall.image}
                         alt={hall.name}
                         className={`w-full h-full object-cover transition-transform duration-700 ${
-                          isCenter ? "group-hover:scale-110" : "grayscale-[15%] group-hover:grayscale-0"
+                          isCenter
+                            ? "group-hover:scale-110"
+                            : "grayscale-[15%] group-hover:grayscale-0"
                         }`}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent transition-all duration-500 group-hover:from-black/60" />
@@ -325,8 +343,18 @@ export const BanquetPage = () => {
                       <div className="absolute bottom-4 right-4 w-8 h-8 border-r-2 border-b-2 border-gold/0 group-hover:border-gold transition-all duration-500 transform translate-x-2 translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 rounded-br-lg" />
                     </div>
 
-                    <div className={`p-7 transition-all duration-500 ${isCenter ? "group-hover:bg-gradient-to-b group-hover:from-white group-hover:to-gold/5" : ""}`}>
-                      <h3 className={`text-2xl font-royal text-gold mb-2 transition-all duration-300 ${isCenter ? "group-hover:text-darkGold" : ""}`}>
+                    <div
+                      className={`p-7 transition-all duration-500 ${
+                        isCenter
+                          ? "group-hover:bg-gradient-to-b group-hover:from-white group-hover:to-gold/5"
+                          : ""
+                      }`}
+                    >
+                      <h3
+                        className={`text-2xl font-royal text-gold mb-2 transition-all duration-300 ${
+                          isCenter ? "group-hover:text-darkGold" : ""
+                        }`}
+                      >
                         {hall.name}
                       </h3>
                       <p className="text-gray-700 mb-4 line-clamp-3 font-serif">
@@ -348,6 +376,19 @@ export const BanquetPage = () => {
                           </p>
                         </div>
                       </div>
+
+                      {/* Desktop center-card Book Banquet button */}
+                      {isCenter && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/banquet-booking?hallId=${hall.id}`);
+                          }}
+                          className="mt-6 w-full bg-gold text-white py-3 rounded-lg text-sm uppercase tracking-wider hover:bg-darkGold transition"
+                        >
+                          Book Banquet
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
@@ -459,6 +500,14 @@ export const BanquetPage = () => {
                     {hall.areaSqFt.toLocaleString()} Sq. Ft.
                   </p>
                 </div>
+
+                {/* Filtered card Book Banquet button */}
+                <button
+                  onClick={() => navigate(`/banquet-booking?hallId=${hall.id}`)}
+                  className="mt-6 w-full bg-gold text-white py-3 rounded-lg text-sm uppercase tracking-wider hover:bg-darkGold transition"
+                >
+                  Book Banquet
+                </button>
               </div>
             </div>
           ))}
@@ -502,7 +551,7 @@ export const BanquetPage = () => {
           {/* Controls */}
           <div className="flex items-center justify-center gap-4 mt-10">
             <button
-              onClick={prevReview}
+              onClick={prevReviewReview}
               className="w-10 h-10 flex items-center justify-center border border-gold rounded-full hover:bg-gold hover:text-white transition"
             >
               ‹
@@ -520,64 +569,106 @@ export const BanquetPage = () => {
 
       {/* ========= LIGHTBOX ========= */}
       {lightboxHall && (
-        <div 
+        <div
           className="fixed inset-0 z-50 bg-black/95 backdrop-blur-xl flex items-center justify-center p-4 sm:p-8"
           onClick={closeLightbox}
         >
           {/* Close button */}
-          <button 
+          <button
             className="absolute top-4 right-4 sm:top-6 sm:right-6 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all duration-300 z-50"
             onClick={closeLightbox}
           >
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            <svg
+              className="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M6 18L18 6M6 6l12 12"
+              />
             </svg>
           </button>
 
           {/* Navigation arrows */}
-          <button 
+          <button
             className="absolute left-2 sm:left-6 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all duration-300 z-50"
-            onClick={(e) => { e.stopPropagation(); prevSlide(); setLightboxHall(halls[getIndex(-1)]); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              prevSlide();
+              setLightboxHall(halls[getIndex(-1)]);
+            }}
           >
             <ArrowLeft className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
 
-          <button 
+          <button
             className="absolute right-2 sm:right-6 top-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-all duration-300 z-50"
-            onClick={(e) => { e.stopPropagation(); nextSlide(); setLightboxHall(halls[getIndex(1)]); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              nextSlide();
+              setLightboxHall(halls[getIndex(1)]);
+            }}
           >
             <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6" />
           </button>
 
           {/* Lightbox content */}
-          <div 
+          <div
             className="max-w-5xl w-full flex flex-col items-center"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Image */}
-            <div className="relative w-full overflow-hidden rounded-2xl shadow-2xl" style={{ maxHeight: '70vh' }}>
-              <img 
-                src={lightboxHall.image} 
+            <div
+              className="relative w-full overflow-hidden rounded-2xl shadow-2xl"
+              style={{ maxHeight: "70vh" }}
+            >
+              <img
+                src={lightboxHall.image}
                 alt={lightboxHall.name}
                 className="w-full h-full object-cover animate-fadeIn"
-                style={{ maxHeight: '70vh' }}
+                style={{ maxHeight: "70vh" }}
               />
               <div className="absolute inset-0 border-2 border-gold/30 rounded-2xl pointer-events-none" />
             </div>
 
             {/* Info */}
             <div className="text-center mt-6 sm:mt-8 animate-fadeInUp">
-              <h3 className="text-3xl sm:text-4xl font-royal text-gold mb-3">{lightboxHall.name}</h3>
-              <p className="text-white/80 font-serif max-w-2xl mx-auto mb-4 text-sm sm:text-base px-4">{lightboxHall.description}</p>
+              <h3 className="text-3xl sm:text-4xl font-royal text-gold mb-3">
+                {lightboxHall.name}
+              </h3>
+              <p className="text-white/80 font-serif max-w-2xl mx-auto mb-4 text-sm sm:text-base px-4">
+                {lightboxHall.description}
+              </p>
               <div className="flex items-center justify-center gap-6 sm:gap-8 text-white/70 text-sm">
                 <div>
-                  <span className="text-gold font-semibold">{lightboxHall.capacity}</span> Guests
+                  <span className="text-gold font-semibold">
+                    {lightboxHall.capacity}
+                  </span>{" "}
+                  Guests
                 </div>
                 <div className="w-[1px] h-4 bg-white/30" />
                 <div>
-                  <span className="text-gold font-semibold">{lightboxHall.areaSqFt.toLocaleString()}</span> Sq. Ft.
+                  <span className="text-gold font-semibold">
+                    {lightboxHall.areaSqFt.toLocaleString()}
+                  </span>{" "}
+                  Sq. Ft.
                 </div>
               </div>
+
+              {/* Lightbox Book Banquet button */}
+              <button
+                onClick={() => {
+                  closeLightbox();
+                  navigate(`/banquet-booking?hallId=${lightboxHall.id}`);
+                }}
+                className="mt-6 w-full max-w-md bg-gold text-white py-3 rounded-lg text-sm uppercase tracking-wider hover:bg-darkGold transition"
+              >
+                Book Banquet
+              </button>
             </div>
 
             {/* Dots indicator */}
@@ -585,9 +676,15 @@ export const BanquetPage = () => {
               {halls.map((hall, idx) => (
                 <button
                   key={idx}
-                  onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); setLightboxHall(hall); }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCurrentIndex(idx);
+                    setLightboxHall(hall);
+                  }}
                   className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    hall.id === lightboxHall.id ? "bg-gold w-8" : "bg-white/30 hover:bg-white/50"
+                    hall.id === lightboxHall.id
+                      ? "bg-gold w-8"
+                      : "bg-white/30 hover:bg-white/50"
                   }`}
                 />
               ))}
@@ -598,7 +695,3 @@ export const BanquetPage = () => {
     </div>
   );
 };
-
-
-
-

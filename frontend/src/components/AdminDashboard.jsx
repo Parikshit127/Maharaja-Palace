@@ -1,7 +1,13 @@
-import { useState, useEffect } from 'react';
-import { authAPI, bookingAPI, banquetAPI, restaurantAPI, roomAPI } from '../api/api';
-import { Loader } from 'lucide-react';
-import { showToast } from '../utils/toast';
+import { useState, useEffect } from "react";
+import {
+  authAPI,
+  bookingAPI,
+  banquetAPI,
+  restaurantAPI,
+  roomAPI,
+} from "../api/api";
+import { Loader } from "lucide-react";
+import { showToast } from "../utils/toast";
 
 export const AdminDashboard = ({ setActiveTab }) => {
   const [stats, setStats] = useState({
@@ -10,6 +16,7 @@ export const AdminDashboard = ({ setActiveTab }) => {
     todayRevenue: 0,
     occupancyRate: 0,
   });
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -22,96 +29,108 @@ export const AdminDashboard = ({ setActiveTab }) => {
     setError(null);
 
     try {
-      // Fetch all required data in parallel
-      const [usersRes, roomBookingsRes, banquetBookingsRes, restaurantBookingsRes, roomsRes] = await Promise.all([
+      // Load users, bookings, rooms
+      const [
+        usersRes,
+        roomBookingsRes,
+        banquetBookingsRes,
+        restaurantBookingsRes,
+        roomsRes,
+        statsRes, // ⭐ ADDED HERE
+      ] = await Promise.all([
         authAPI.getAllUsers(),
-        bookingAPI.getAllBookings(),
+        bookingAPI.getBookings(),
         banquetAPI.getAllBookings(),
         restaurantAPI.getAllBookings(),
         roomAPI.getAllRooms(),
+        banquetAPI.getStats(), // ⭐ ADDED HERE
       ]);
 
-      // Calculate total users
       const totalUsers = usersRes.data.users?.length || 0;
 
-      // Calculate active bookings (all bookings that are not cancelled or completed)
       const roomBookings = roomBookingsRes.data.bookings || [];
       const banquetBookings = banquetBookingsRes.data.bookings || [];
       const restaurantBookings = restaurantBookingsRes.data.bookings || [];
 
       const activeRoomBookings = roomBookings.filter(
-        (b) => !['cancelled', 'checked-out'].includes(b.status)
+        (b) => !["cancelled", "checked-out"].includes(b.status)
       ).length;
+
       const activeBanquetBookings = banquetBookings.filter(
-        (b) => !['cancelled', 'completed'].includes(b.status)
+        (b) => !["cancelled", "completed"].includes(b.status)
       ).length;
+
       const activeRestaurantBookings = restaurantBookings.filter(
-        (b) => !['cancelled', 'completed'].includes(b.status)
+        (b) => !["cancelled", "completed"].includes(b.status)
       ).length;
 
-      const activeBookings = activeRoomBookings + activeBanquetBookings + activeRestaurantBookings;
+      const activeBookings =
+        activeRoomBookings + activeBanquetBookings + activeRestaurantBookings;
 
-      // Calculate today's revenue
-      const todayRevenue = calculateTodayRevenue(roomBookings, banquetBookings, restaurantBookings);
+      // Calculate revenue (existing logic)
+      const todayRevenue = calculateTodayRevenue(
+        roomBookings,
+        banquetBookings,
+        restaurantBookings
+      );
 
-      // Calculate occupancy rate
-      const rooms = roomsRes.data.rooms || [];
-      const occupancyRate = calculateOccupancyRate(rooms);
+      const occupancyRate = calculateOccupancyRate(roomsRes.data.rooms || []);
+
+      // ⭐ NEW — assign stat results from banquet stats API
+      const banquetStats = statsRes.data.stats || {};
 
       setStats({
         totalUsers,
         activeBookings,
         todayRevenue,
         occupancyRate,
+        banquetStats, // optional if you want to display it later
       });
-    } catch (error) {
-      console.error('Error loading dashboard stats:', error);
-      setError('Failed to load dashboard statistics');
-      showToast('Failed to load dashboard statistics', 'error');
+    } catch (err) {
+      console.error("Error loading dashboard stats:", err);
+      setError("Failed to load dashboard statistics");
+      showToast("Failed to load dashboard statistics", "error");
     } finally {
       setLoading(false);
     }
   };
 
-  const calculateTodayRevenue = (roomBookings, banquetBookings, restaurantBookings) => {
+  const calculateTodayRevenue = (
+    roomBookings,
+    banquetBookings,
+    restaurantBookings
+  ) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
     let revenue = 0;
 
-    // Room bookings revenue
-    roomBookings.forEach((booking) => {
+    const checkRevenue = (booking) => {
       const bookingDate = new Date(booking.createdAt);
       bookingDate.setHours(0, 0, 0, 0);
-      if (bookingDate.getTime() === today.getTime() && booking.paymentStatus === 'completed') {
-        revenue += booking.totalPrice || 0;
-      }
-    });
 
-    // Banquet bookings revenue
-    banquetBookings.forEach((booking) => {
-      const bookingDate = new Date(booking.createdAt);
-      bookingDate.setHours(0, 0, 0, 0);
-      if (bookingDate.getTime() === today.getTime() && booking.paymentStatus === 'completed') {
+      if (
+        bookingDate.getTime() === today.getTime() &&
+        booking.paymentStatus === "completed"
+      ) {
         revenue += booking.totalPrice || 0;
       }
-    });
+    };
 
-    // Restaurant bookings revenue
-    restaurantBookings.forEach((booking) => {
-      const bookingDate = new Date(booking.createdAt);
-      bookingDate.setHours(0, 0, 0, 0);
-      if (bookingDate.getTime() === today.getTime() && booking.paymentStatus === 'completed') {
-        revenue += booking.totalPrice || 0;
-      }
-    });
+    roomBookings.forEach(checkRevenue);
+    banquetBookings.forEach(checkRevenue);
+    restaurantBookings.forEach(checkRevenue);
 
     return revenue;
   };
 
   const calculateOccupancyRate = (rooms) => {
-    if (rooms.length === 0) return 0;
-    const occupiedRooms = rooms.filter((room) => room.status === 'occupied').length;
+    if (!rooms.length) return 0;
+
+    const occupiedRooms = rooms.filter(
+      (room) => room.status === "occupied"
+    ).length;
+
     return Math.round((occupiedRooms / rooms.length) * 100);
   };
 
@@ -140,78 +159,74 @@ export const AdminDashboard = ({ setActiveTab }) => {
   return (
     <div>
       <h2 className="text-2xl font-playfair text-gold mb-6">Overview</h2>
-      
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 rounded-full bg-blue-100 text-blue-600">
-              👥
-            </div>
-          </div>
           <p className="text-gray-500 text-sm mb-1">Total Users</p>
-          <h3 className="text-2xl font-bold text-gray-800">{stats.totalUsers}</h3>
+          <h3 className="text-2xl font-bold text-gray-800">
+            {stats.totalUsers}
+          </h3>
         </div>
 
         <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 rounded-full bg-green-100 text-green-600">
-              📅
-            </div>
-          </div>
           <p className="text-gray-500 text-sm mb-1">Active Bookings</p>
-          <h3 className="text-2xl font-bold text-gray-800">{stats.activeBookings}</h3>
+          <h3 className="text-2xl font-bold text-gray-800">
+            {stats.activeBookings}
+          </h3>
         </div>
 
         <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 rounded-full bg-yellow-100 text-yellow-600">
-              💰
-            </div>
-          </div>
           <p className="text-gray-500 text-sm mb-1">Revenue (Today)</p>
-          <h3 className="text-2xl font-bold text-gray-800">₹{stats.todayRevenue.toLocaleString()}</h3>
+          <h3 className="text-2xl font-bold text-gray-800">
+            ₹{stats.todayRevenue.toLocaleString()}
+          </h3>
         </div>
 
         <div className="bg-white border border-gray-200 p-6 rounded-lg shadow-sm">
-          <div className="flex justify-between items-start mb-4">
-            <div className="p-3 rounded-full bg-purple-100 text-purple-600">
-              📊
-            </div>
-          </div>
           <p className="text-gray-500 text-sm mb-1">Occupancy Rate</p>
-          <h3 className="text-2xl font-bold text-gray-800">{stats.occupancyRate}%</h3>
+          <h3 className="text-2xl font-bold text-gray-800">
+            {stats.occupancyRate}%
+          </h3>
         </div>
       </div>
 
-      {/* Quick Actions and System Status */}
+      {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-cream/30 p-6 rounded-lg border border-gold/10">
-          <h3 className="text-xl font-playfair text-gold mb-4">Quick Actions</h3>
+          <h3 className="text-xl font-playfair text-gold mb-4">
+            Quick Actions
+          </h3>
+
           <div className="space-y-3">
             <button
-              onClick={() => setActiveTab('rooms')}
-              className="w-full text-left p-3 bg-white rounded shadow-sm hover:shadow-md transition-shadow flex items-center"
+              onClick={() => setActiveTab("rooms")}
+              className="w-full text-left p-3 bg-white rounded shadow-sm hover:shadow-md transition-shadow"
             >
-              <span className="mr-3">➕</span> Add New Room
+              ➕ Add New Room
             </button>
+
             <button
-              onClick={() => setActiveTab('bookings')}
-              className="w-full text-left p-3 bg-white rounded shadow-sm hover:shadow-md transition-shadow flex items-center"
+              onClick={() => setActiveTab("bookings")}
+              className="w-full text-left p-3 bg-white rounded shadow-sm hover:shadow-md transition-shadow"
             >
-              <span className="mr-3">👁️</span> View Recent Bookings
+              👁️ View Recent Bookings
             </button>
+
             <button
-              onClick={() => setActiveTab('users')}
-              className="w-full text-left p-3 bg-white rounded shadow-sm hover:shadow-md transition-shadow flex items-center"
+              onClick={() => setActiveTab("users")}
+              className="w-full text-left p-3 bg-white rounded shadow-sm hover:shadow-md transition-shadow"
             >
-              <span className="mr-3">👤</span> Manage Users
+              👤 Manage Users
             </button>
           </div>
         </div>
 
         <div className="bg-cream/30 p-6 rounded-lg border border-gold/10">
-          <h3 className="text-xl font-playfair text-gold mb-4">System Status</h3>
+          <h3 className="text-xl font-playfair text-gold mb-4">
+            System Status
+          </h3>
+
           <div className="space-y-4">
             <div className="flex justify-between items-center">
               <span>Server Status</span>
@@ -219,12 +234,14 @@ export const AdminDashboard = ({ setActiveTab }) => {
                 ONLINE
               </span>
             </div>
+
             <div className="flex justify-between items-center">
               <span>Database</span>
               <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-bold">
                 CONNECTED
               </span>
             </div>
+
             <div className="flex justify-between items-center">
               <span>Last Backup</span>
               <span className="text-sm text-gray-500">Today, 04:00 AM</span>

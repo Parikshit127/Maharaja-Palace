@@ -36,12 +36,12 @@ export const AdminPage = () => {
           <div className="bg-white shadow-lg rounded-lg overflow-hidden border border-gold/20">
             <nav className="flex flex-col">
               {[
-                { id: 'dashboard', label: 'Overview', icon: '📊' },
-                { id: 'rooms', label: 'Rooms', icon: '🛏️' },
-                { id: 'banquet', label: 'Banquet Halls', icon: '✨' },
-                { id: 'restaurant', label: 'Restaurant', icon: '🍽️' },
-                { id: 'bookings', label: 'Bookings', icon: '📅' },
-                { id: 'users', label: 'Users', icon: '👥' },
+                { id: 'dashboard', label: 'Overview', icon: '-' },
+                { id: 'rooms', label: 'Rooms', icon: '-' },
+                { id: 'banquet', label: 'Banquet Halls', icon: '-' },
+                { id: 'restaurant', label: 'Restaurant', icon: '-' },
+                { id: 'bookings', label: 'Bookings', icon: '-' },
+                { id: 'users', label: 'Users', icon: '-' },
               ].map((item) => (
                 <button
                   key={item.id}

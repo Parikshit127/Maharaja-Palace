@@ -3,9 +3,9 @@
 ## Changes Made
 
 ### 1. Fixed Port Configuration
-- **Backend**: Running on port `5002` (as configured in `backend/.env`)
-- **Frontend**: Updated to connect to `http://localhost:5002/api`
-  - Updated `frontend/.env`: `VITE_API_URL=http://localhost:5002/api`
+- **Backend**: Running on port `5000` (as configured in `backend/.env`)
+- **Frontend**: Updated to connect to `http://localhost:5000/api`
+  - Updated `frontend/.env`: `VITE_API_URL=http://localhost:5000/api`
   - Updated `frontend/src/api/api.js` to use environment variable
 
 ### 2. Fixed CORS Configuration
@@ -64,7 +64,7 @@
 cd backend
 npm run dev
 ```
-Backend will run on: http://localhost:5002
+Backend will run on: http://localhost:5000
 
 ### Start Frontend
 ```bash
@@ -109,7 +109,7 @@ Frontend will run on: http://localhost:5173
 - Check that CORS is enabled in `backend/src/app.js`
 
 ### Connection Refused
-- Verify backend is running on port 5002
+- Verify backend is running on port 5000
 - Verify frontend is connecting to the correct port
 - Check `frontend/.env` has correct VITE_API_URL
 
@@ -126,7 +126,7 @@ Frontend will run on: http://localhost:5173
 
 ### Backend (.env)
 ```
-PORT=5002
+PORT=5000
 NODE_ENV=development
 MONGODB_URI=mongodb+srv://...
 JWT_SECRET=your_secret_key
@@ -136,7 +136,7 @@ FRONTEND_URL=http://localhost:5173
 
 ### Frontend (.env)
 ```
-VITE_API_URL=http://localhost:5002/api
+VITE_API_URL=http://localhost:5000/api
 ```
 
 ## Next Steps

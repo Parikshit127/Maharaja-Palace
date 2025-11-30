@@ -502,7 +502,7 @@ cd backend
 npm install
 npm run dev
 ```
-Server runs on: http://localhost:5002
+Server runs on: http://localhost:5000
 
 **Frontend:**
 ```bash

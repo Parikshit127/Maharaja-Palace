@@ -1,35 +1,45 @@
 import express from "express";
+import upload from "../middleware/multer.js";
+
 import {
   createBanquetHall,
-  getAllBanquetHalls,
   updateBanquetHall,
   deleteBanquetHall,
-  createBanquetBooking,
-  getMyBanquetBookings,
-  getBanquetHallById,
-  getAllBanquetBookings,
-  quickSeed,
+  getBanquetHalls,
+  getBanquetBookings,
+  getBanquetDashboardStats,
 } from "../controllers/banquetController.js";
-import { protect, authorize } from "../middleware/auth.js";
 
 const router = express.Router();
 
-// Admin routes - Halls
-router.post("/halls", protect, authorize("admin"), createBanquetHall);
-router.put("/halls/:id", protect, authorize("admin"), updateBanquetHall);
-router.delete("/halls/:id", protect, authorize("admin"), deleteBanquetHall);
+// ---------------------------
+// Banquet Halls Routes
+// ---------------------------
 
-// Guest routes
-router.get("/halls", getAllBanquetHalls);
-router.get("/halls/:id", getBanquetHallById);
-router.post("/bookings", protect, createBanquetBooking);
-router.get(
-  "/bookings",
-  protect,
-  authorize("admin", "manager"),
-  getAllBanquetBookings
-);
-router.get("/bookings/me", protect, getMyBanquetBookings);
-router.get("/seed", quickSeed);
+// Get all banquet halls
+router.get("/halls", getBanquetHalls);
+
+// Create a new banquet hall (with images)
+router.post("/halls", upload.array("images", 10), createBanquetHall);
+
+// Update existing banquet hall (with new images)
+router.put("/halls/:id", upload.array("images", 10), updateBanquetHall);
+
+// Delete a banquet hall
+router.delete("/halls/:id", deleteBanquetHall);
+
+// ---------------------------
+// Bookings Routes
+// ---------------------------
+
+// Get all banquet bookings
+router.get("/bookings", getBanquetBookings);
+
+// ---------------------------
+// Statistics Route
+// ---------------------------
+
+// Admin stats: total halls, bookings, revenue etc.
+router.get("/stats", getBanquetDashboardStats);
 
 export default router;

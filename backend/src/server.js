@@ -29,7 +29,7 @@ const server = app.listen(config.port, () => {
   console.log(`\n🏰 Maharaja Palace Hotel Booking System`);
   console.log(`🚀 Server running on port ${config.port}`);
   console.log(`📍 Environment: ${config.nodeEnv}`);
-  console.log(`🔗 MongoDB: ${config.mongodbUri}`);
+  console.log(`🔗 API Base URL: http://localhost:${config.port}/api`);
   console.log(`\n✅ Server is ready to accept requests\n`);
 });
 
