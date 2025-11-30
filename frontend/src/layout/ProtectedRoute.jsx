@@ -22,7 +22,13 @@ export const AdminRoute = ({ children }) => {
     return <div className="flex items-center justify-center h-screen">Loading...</div>;
   }
 
+  // Debug logging
+  console.log('AdminRoute - User:', user);
+  console.log('AdminRoute - isAuthenticated:', isAuthenticated);
+  console.log('AdminRoute - User Role:', user?.role);
+
   if (!isAuthenticated || user?.role !== 'admin') {
+    console.log('AdminRoute - Access denied, redirecting to home');
     return <Navigate to="/" replace />;
   }
 

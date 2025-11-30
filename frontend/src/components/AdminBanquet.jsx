@@ -6,6 +6,7 @@ import { showToast } from '../utils/toast';
 export const AdminBanquet = () => {
   const [halls, setHalls] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showForm, setShowForm] = useState(false);
   const [editingHall, setEditingHall] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -23,12 +24,18 @@ export const AdminBanquet = () => {
 
   const loadHalls = async () => {
     setLoading(true);
+    setError(null);
     try {
+      console.log('Fetching banquet halls...');
       const response = await banquetAPI.getAllHalls();
+      console.log('Banquet halls response:', response.data);
       setHalls(response.data.banquetHalls || []);
     } catch (error) {
       console.error('Error fetching halls:', error);
-      showToast('Failed to load banquet halls', 'error');
+      console.error('Error details:', error.response?.data);
+      const errorMessage = error.response?.data?.message || 'Failed to load banquet halls';
+      setError(errorMessage);
+      showToast(errorMessage, 'error');
     } finally {
       setLoading(false);
     }
@@ -119,6 +126,23 @@ export const AdminBanquet = () => {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader className="w-8 h-8 animate-spin text-[#B8860B]" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-20">
+        <div className="text-red-600 mb-4">
+          <p className="text-lg font-semibold mb-2">Error Loading Banquet Halls</p>
+          <p className="text-sm">{error}</p>
+        </div>
+        <button
+          onClick={loadHalls}
+          className="px-4 py-2 bg-[#B8860B] text-white rounded-lg hover:bg-[#8B6914] transition-colors"
+        >
+          Retry
+        </button>
       </div>
     );
   }

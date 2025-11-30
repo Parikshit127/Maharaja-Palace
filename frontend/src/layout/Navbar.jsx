@@ -49,15 +49,16 @@ export const Navbar = () => {
           <div className="flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <Link to="/dashboard">
-                  <Button variant="secondary" size="sm">
-                    Dashboard
-                  </Button>
-                </Link>
-                {user?.role === 'admin' && (
+                {user?.role === 'admin' ? (
                   <Link to="/admin">
                     <Button variant="secondary" size="sm">
-                      Admin
+                      Admin Portal
+                    </Button>
+                  </Link>
+                ) : (
+                  <Link to="/dashboard">
+                    <Button variant="secondary" size="sm">
+                      Dashboard
                     </Button>
                   </Link>
                 )}

@@ -10,14 +10,24 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     const initAuth = async () => {
       const storedToken = localStorage.getItem('token');
+      const storedUser = localStorage.getItem('user');
+      
       if (storedToken) {
         try {
-          // Verify token by fetching user profile
+          // First, try to use stored user data for immediate access
+          if (storedUser) {
+            const parsedUser = JSON.parse(storedUser);
+            setUser(parsedUser);
+            setToken(storedToken);
+          }
+          
+          // Then verify token by fetching fresh user profile
           const { authAPI } = await import('../api/api');
           const response = await authAPI.getMe();
           if (response.data.success) {
             setUser(response.data.user);
             setToken(storedToken);
+            localStorage.setItem('user', JSON.stringify(response.data.user));
           } else {
             throw new Error('Invalid token');
           }
