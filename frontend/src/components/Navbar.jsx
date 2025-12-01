@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings } from 'lucide-react';
 
 export const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -182,6 +182,22 @@ export const Navbar = () => {
                     <User className="w-3.5 h-3.5" />
                     Dashboard
                   </Link>
+                  
+                  {/* Admin Panel Link - Only for Admin Users */}
+                  {user.role === 'admin' && (
+                    <Link
+                      to="/admin"
+                      className={`flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-[0.15em] transition-all duration-500 hover:tracking-[0.2em] whitespace-nowrap ${
+                        isScrolled
+                          ? 'text-[#111111] hover:text-[#C9A23F]'
+                          : 'text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)] hover:text-[#C9A23F]'
+                      }`}
+                    >
+                      <Settings className="w-3.5 h-3.5" />
+                      Admin Panel
+                    </Link>
+                  )}
+                  
                   <button
                     onClick={logout}
                     className="group relative px-4 py-2 overflow-hidden border-2 border-[#C9A23F] transition-all duration-500 hover:shadow-[0_0_20px_rgba(201,162,63,0.3)] whitespace-nowrap"
@@ -307,6 +323,19 @@ export const Navbar = () => {
                         <User className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                         <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em]">Dashboard</span>
                       </Link>
+                      
+                      {/* Admin Panel Link - Mobile - Only for Admin Users */}
+                      {user.role === 'admin' && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setIsMobileMenuOpen(false)}
+                          className="flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 sm:py-3 bg-white border-2 border-[#C9A23F] text-[#C9A23F] hover:bg-[#C9A23F] hover:text-white transition-all duration-300"
+                        >
+                          <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em]">Admin Panel</span>
+                        </Link>
+                      )}
+                      
                       <button
                         onClick={() => {
                           logout();
