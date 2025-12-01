@@ -1,5 +1,6 @@
 import Room from "../models/Room.js";
 import RoomType from "../models/RoomType.js";
+import Booking from "../models/Booking.js"; // Make sure you have this model
 import { logger } from "../utils/logger.js";
 
 // Admin - Create Room Type
@@ -121,7 +122,12 @@ export const getAllRooms = async (req, res, next) => {
   }
 };
 
-// Guest - Get Available Rooms
+// Helper function to check if dates overlap
+const datesOverlap = (start1, end1, start2, end2) => {
+  return start1 < end2 && start2 < end1;
+};
+
+// Guest - Get Available Rooms (Enhanced with booking conflict check)
 export const getAvailableRooms = async (req, res, next) => {
   try {
     const { checkIn, checkOut, guests } = req.query;
@@ -133,24 +139,199 @@ export const getAvailableRooms = async (req, res, next) => {
       });
     }
 
-    // Get available rooms (basic - will be enhanced with booking date checking in Phase 2)
-    const availableRooms = await Room.find({
-      status: "available",
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+
+    // Validate dates
+    if (checkInDate >= checkOutDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Check-out date must be after check-in date",
+      });
+    }
+
+    if (checkInDate < new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: "Check-in date cannot be in the past",
+      });
+    }
+
+    // Get all active rooms
+    const allRooms = await Room.find({
       isActive: true,
     }).populate("roomType");
 
-    // Filter by occupancy
-    const filteredRooms = availableRooms.filter(
-      (room) => room.roomType.maxOccupancy >= parseInt(guests)
+    // Find all bookings that overlap with the requested dates
+    const overlappingBookings = await Booking.find({
+      status: { $in: ["confirmed", "pending"] },
+      $or: [
+        {
+          checkInDate: { $lt: checkOutDate },
+          checkOutDate: { $gt: checkInDate },
+        },
+      ],
+    }).select("room");
+
+    // Get IDs of booked rooms
+    const bookedRoomIds = overlappingBookings.map((booking) =>
+      booking.room.toString()
     );
+
+    // Filter out booked rooms and check occupancy
+    const availableRooms = allRooms.filter((room) => {
+      const isNotBooked = !bookedRoomIds.includes(room._id.toString());
+      const hasCapacity = room.roomType.maxOccupancy >= parseInt(guests);
+      const isAvailable = room.status === "available";
+
+      return isNotBooked && hasCapacity && isAvailable;
+    });
 
     res.status(200).json({
       success: true,
-      count: filteredRooms.length,
-      rooms: filteredRooms,
+      count: availableRooms.length,
+      rooms: availableRooms,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
     });
   } catch (error) {
     logger.error(`Get available rooms error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Check Room Availability (New endpoint)
+export const checkRoomAvailability = async (req, res, next) => {
+  try {
+    const { roomId, checkIn, checkOut } = req.query;
+
+    if (!roomId || !checkIn || !checkOut) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide roomId, checkIn, and checkOut dates",
+      });
+    }
+
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+
+    // Validate dates
+    if (checkInDate >= checkOutDate) {
+      return res.status(400).json({
+        success: false,
+        message: "Check-out date must be after check-in date",
+      });
+    }
+
+    // Check if room exists
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({
+        success: false,
+        message: "Room not found",
+      });
+    }
+
+    // Find overlapping bookings for this specific room
+    const overlappingBooking = await Booking.findOne({
+      room: roomId,
+      status: { $in: ["confirmed", "pending"] },
+      $or: [
+        {
+          checkInDate: { $lt: checkOutDate },
+          checkOutDate: { $gt: checkInDate },
+        },
+      ],
+    });
+
+    const isAvailable = !overlappingBooking && room.status === "available";
+
+    res.status(200).json({
+      success: true,
+      available: isAvailable,
+      room: {
+        id: room._id,
+        roomNumber: room.roomNumber,
+        status: room.status,
+      },
+      conflictingBooking: overlappingBooking
+        ? {
+            checkIn: overlappingBooking.checkInDate,
+            checkOut: overlappingBooking.checkOutDate,
+          }
+        : null,
+    });
+  } catch (error) {
+    logger.error(`Check room availability error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Get Available Room Types with count (New endpoint)
+export const getAvailableRoomTypes = async (req, res, next) => {
+  try {
+    const { checkIn, checkOut, guests } = req.query;
+
+    if (!checkIn || !checkOut) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide checkIn and checkOut dates",
+      });
+    }
+
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+
+    // Get all room types
+    const roomTypes = await RoomType.find({ isActive: true });
+
+    // Get all rooms
+    const allRooms = await Room.find({ isActive: true }).populate("roomType");
+
+    // Find overlapping bookings
+    const overlappingBookings = await Booking.find({
+      status: { $in: ["confirmed", "pending"] },
+      $or: [
+        {
+          checkInDate: { $lt: checkOutDate },
+          checkOutDate: { $gt: checkInDate },
+        },
+      ],
+    }).select("room");
+
+    const bookedRoomIds = overlappingBookings.map((booking) =>
+      booking.room.toString()
+    );
+
+    // Calculate available rooms per room type
+    const roomTypesWithAvailability = roomTypes.map((roomType) => {
+      const roomsOfThisType = allRooms.filter(
+        (room) =>
+          room.roomType._id.toString() === roomType._id.toString() &&
+          room.status === "available" &&
+          !bookedRoomIds.includes(room._id.toString())
+      );
+
+      const guestCount = guests ? parseInt(guests) : 1;
+      const canAccommodate = roomType.maxOccupancy >= guestCount;
+
+      return {
+        ...roomType.toObject(),
+        availableRooms: canAccommodate ? roomsOfThisType.length : 0,
+        totalRooms: allRooms.filter(
+          (room) => room.roomType._id.toString() === roomType._id.toString()
+        ).length,
+      };
+    });
+
+    res.status(200).json({
+      success: true,
+      roomTypes: roomTypesWithAvailability,
+      checkIn: checkInDate,
+      checkOut: checkOutDate,
+    });
+  } catch (error) {
+    logger.error(`Get available room types error: ${error.message}`);
     next(error);
   }
 };

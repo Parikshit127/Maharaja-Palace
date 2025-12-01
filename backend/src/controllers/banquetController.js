@@ -1,6 +1,7 @@
 import cloudinary from "../config/cloudinary.js";
 import BanquetHall from "../models/BanquetHall.js";
 import BanquetBooking from "../models/BanquetBooking.js";
+import { logger } from "../utils/logger.js";
 
 // Upload buffer to Cloudinary
 const uploadToCloudinary = (buffer) => {
@@ -110,7 +111,6 @@ export const createBanquetHall = async (req, res) => {
           gallery.push({ url, alt: name });
         } catch (uploadError) {
           console.error("Failed to upload image:", uploadError);
-          // Continue with other images even if one fails
         }
       }
 
@@ -173,9 +173,8 @@ export const updateBanquetHall = async (req, res) => {
       });
     }
 
-    let updatedImages = [...hall.images]; // keep old images
+    let updatedImages = [...hall.images];
 
-    // If new images uploaded → add them
     if (req.files && req.files.length > 0) {
       console.log(`📤 Uploading ${req.files.length} new images...`);
 
@@ -196,7 +195,6 @@ export const updateBanquetHall = async (req, res) => {
       images: updatedImages,
     };
 
-    // Parse JSON fields if they exist
     if (req.body.amenities) {
       updateData.amenities = JSON.parse(req.body.amenities);
     }
@@ -252,13 +250,18 @@ export const deleteBanquetHall = async (req, res) => {
 };
 
 // ===========================
-// GET ALL BOOKINGS
+// BOOKINGS - GET ALL (Admin)
 // ===========================
 export const getBanquetBookings = async (req, res) => {
   try {
-    const bookings = await BanquetBooking.find();
+    const bookings = await BanquetBooking.find()
+      .populate("guest", "firstName lastName email phone")
+      .populate("banquetHall")
+      .sort("-createdAt");
+
     res.json({
       success: true,
+      count: bookings.length,
       bookings,
     });
   } catch (err) {
@@ -266,6 +269,239 @@ export const getBanquetBookings = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to load bookings",
+    });
+  }
+};
+
+// ===========================
+// BOOKINGS - GET MY BOOKINGS (Guest)
+// ===========================
+export const getMyBanquetBookings = async (req, res) => {
+  try {
+    const bookings = await BanquetBooking.find({ guest: req.user.id })
+      .populate("banquetHall")
+      .sort("-createdAt");
+
+    logger.info(
+      `User ${req.user.id} retrieved ${bookings.length} banquet bookings`
+    );
+
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      bookings,
+    });
+  } catch (err) {
+    logger.error(`Get my banquet bookings error: ${err.message}`);
+    res.status(500).json({
+      success: false,
+      message: "Failed to load your bookings",
+    });
+  }
+};
+
+// ===========================
+// BOOKINGS - CREATE (Guest)
+// ===========================
+export const createBanquetBooking = async (req, res) => {
+  try {
+    const {
+      banquetHall,
+      eventDate,
+      eventType,
+      expectedGuests,
+      setupType,
+      specialRequirements,
+    } = req.body;
+
+    // Validate required fields
+    if (
+      !banquetHall ||
+      !eventDate ||
+      !eventType ||
+      !expectedGuests ||
+      !setupType
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Please provide all required fields",
+      });
+    }
+
+    // Check if hall exists
+    const hall = await BanquetHall.findById(banquetHall);
+    if (!hall) {
+      return res.status(404).json({
+        success: false,
+        message: "Banquet hall not found",
+      });
+    }
+
+    // Check capacity
+    const capacity = hall.capacity[setupType];
+    if (expectedGuests > capacity) {
+      return res.status(400).json({
+        success: false,
+        message: `This setup type can accommodate maximum ${capacity} guests`,
+      });
+    }
+
+    // Check if hall is already booked for this date
+    const eventDateObj = new Date(eventDate);
+    const existingBooking = await BanquetBooking.findOne({
+      banquetHall,
+      eventDate: {
+        $gte: new Date(eventDateObj).setHours(0, 0, 0, 0),
+        $lt: new Date(eventDateObj).setHours(23, 59, 59, 999),
+      },
+      status: { $in: ["pending", "confirmed"] },
+    });
+
+    if (existingBooking) {
+      return res.status(409).json({
+        success: false,
+        message: "This hall is already booked for the selected date",
+      });
+    }
+
+    // Create booking
+    const booking = await BanquetBooking.create({
+      guest: req.user.id,
+      banquetHall,
+      eventDate,
+      eventType,
+      expectedGuests,
+      setupType,
+      hallRate: hall.basePrice,
+      totalPrice: hall.basePrice,
+      specialRequirements: specialRequirements || "",
+      status: "pending",
+      paymentStatus: "pending",
+    });
+
+    const populatedBooking = await BanquetBooking.findById(booking._id)
+      .populate("guest", "firstName lastName email phone")
+      .populate("banquetHall");
+
+    logger.info(`Banquet booking created: ${booking.bookingNumber}`);
+
+    res.status(201).json({
+      success: true,
+      message: "Banquet booking created successfully",
+      booking: populatedBooking,
+    });
+  } catch (err) {
+    logger.error(`Create banquet booking error: ${err.message}`);
+    res.status(500).json({
+      success: false,
+      message: "Failed to create booking",
+      error: err.message,
+    });
+  }
+};
+
+// ===========================
+// BOOKINGS - CANCEL (Guest)
+// ===========================
+export const cancelBanquetBooking = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const booking = await BanquetBooking.findById(id);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Check if user owns the booking
+    if (booking.guest.toString() !== req.user.id && req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to cancel this booking",
+      });
+    }
+
+    if (booking.status === "cancelled") {
+      return res.status(400).json({
+        success: false,
+        message: "Booking is already cancelled",
+      });
+    }
+
+    if (booking.status === "completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Cannot cancel completed booking",
+      });
+    }
+
+    booking.status = "cancelled";
+    await booking.save();
+
+    logger.info(`Banquet booking cancelled: ${booking.bookingNumber}`);
+
+    res.status(200).json({
+      success: true,
+      message: "Booking cancelled successfully",
+      booking,
+    });
+  } catch (err) {
+    logger.error(`Cancel banquet booking error: ${err.message}`);
+    res.status(500).json({
+      success: false,
+      message: "Failed to cancel booking",
+    });
+  }
+};
+
+// ===========================
+// BOOKINGS - UPDATE STATUS (Admin)
+// ===========================
+export const updateBanquetBookingStatus = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ["pending", "confirmed", "completed", "cancelled"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid status",
+      });
+    }
+
+    const booking = await BanquetBooking.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true, runValidators: true }
+    )
+      .populate("guest", "firstName lastName email phone")
+      .populate("banquetHall");
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    logger.info(
+      `Banquet booking status updated: ${booking.bookingNumber} to ${status}`
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Booking status updated successfully",
+      booking,
+    });
+  } catch (err) {
+    logger.error(`Update banquet booking status error: ${err.message}`);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update booking status",
     });
   }
 };

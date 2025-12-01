@@ -22,11 +22,11 @@ const RestaurantBookingPage = () => {
   });
 
   const timeSlots = [
-    { value: 'breakfast', label: 'Breakfast (7:00 AM - 10:30 AM)', icon: '🌅' },
-    { value: 'lunch', label: 'Lunch (12:00 PM - 3:00 PM)', icon: '☀️' },
-    { value: 'afternoon-tea', label: 'Afternoon Tea (3:00 PM - 5:00 PM)', icon: '🫖' },
-    { value: 'dinner', label: 'Dinner (7:00 PM - 11:00 PM)', icon: '🌙' },
-    { value: 'late-dinner', label: 'Late Dinner (11:00 PM - 1:00 AM)', icon: '✨' }
+    { value: 'breakfast', label: 'Breakfast (7:00 AM - 10:30 AM)' },
+    { value: 'lunch', label: 'Lunch (12:00 PM - 3:00 PM)'},
+    { value: 'afternoon-tea', label: 'Afternoon Tea (3:00 PM - 5:00 PM)'},
+    { value: 'dinner', label: 'Dinner (7:00 PM - 11:00 PM)'},
+    { value: 'late-dinner', label: 'Late Dinner (11:00 PM - 1:00 AM)'}
   ];
 
   useEffect(() => {

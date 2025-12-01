@@ -2,6 +2,8 @@ import app from "./app.js";
 import connectDB from "./config/db.js";
 import { config } from "./config/env.js";
 import mongoose from "mongoose";
+import dotenv from "dotenv";
+dotenv.config();
 
 // Connect to MongoDB and fix indexes
 connectDB().then(async () => {

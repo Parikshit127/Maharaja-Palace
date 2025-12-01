@@ -36,21 +36,26 @@ export const AdminDashboard = ({ setActiveTab }) => {
         banquetBookingsRes,
         restaurantBookingsRes,
         roomsRes,
-        statsRes, // ⭐ ADDED HERE
       ] = await Promise.all([
         authAPI.getAllUsers(),
         bookingAPI.getBookings(),
         banquetAPI.getAllBookings(),
         restaurantAPI.getAllBookings(),
         roomAPI.getAllRooms(),
-        banquetAPI.getStats(), // ⭐ ADDED HERE
       ]);
 
+      // ✅ FIXED: Backend returns { success: true, users: [...] }
+      // Axios already wraps in .data, so we access directly
       const totalUsers = usersRes.data.users?.length || 0;
 
+      // ✅ FIXED: Access bookings directly from response.data
       const roomBookings = roomBookingsRes.data.bookings || [];
       const banquetBookings = banquetBookingsRes.data.bookings || [];
       const restaurantBookings = restaurantBookingsRes.data.bookings || [];
+
+      console.log("📊 Room Bookings:", roomBookings.length);
+      console.log("🎉 Banquet Bookings:", banquetBookings.length);
+      console.log("🍽️ Restaurant Bookings:", restaurantBookings.length);
 
       const activeRoomBookings = roomBookings.filter(
         (b) => !["cancelled", "checked-out"].includes(b.status)
@@ -67,7 +72,7 @@ export const AdminDashboard = ({ setActiveTab }) => {
       const activeBookings =
         activeRoomBookings + activeBanquetBookings + activeRestaurantBookings;
 
-      // Calculate revenue (existing logic)
+      // Calculate revenue
       const todayRevenue = calculateTodayRevenue(
         roomBookings,
         banquetBookings,
@@ -76,18 +81,22 @@ export const AdminDashboard = ({ setActiveTab }) => {
 
       const occupancyRate = calculateOccupancyRate(roomsRes.data.rooms || []);
 
-      // ⭐ NEW — assign stat results from banquet stats API
-      const banquetStats = statsRes.data.stats || {};
+      console.log("✅ Stats calculated:", {
+        totalUsers,
+        activeBookings,
+        todayRevenue,
+        occupancyRate,
+      });
 
       setStats({
         totalUsers,
         activeBookings,
         todayRevenue,
         occupancyRate,
-        banquetStats, // optional if you want to display it later
       });
     } catch (err) {
-      console.error("Error loading dashboard stats:", err);
+      console.error("❌ Error loading dashboard stats:", err);
+      console.error("❌ Error response:", err.response?.data);
       setError("Failed to load dashboard statistics");
       showToast("Failed to load dashboard statistics", "error");
     } finally {

@@ -67,7 +67,22 @@ app.use("/api/rooms", roomRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/banquet", banquetRoutes);
 app.use("/api/restaurant", restaurantRoutes);
-
+// API info route
+app.get("/api", (req, res) => {
+  res.json({
+    success: true,
+    message: "Maharaja Palace Hotel API",
+    version: "1.0.0",
+    endpoints: {
+      test: "/api/test",
+      auth: "/api/auth",
+      rooms: "/api/rooms",
+      bookings: "/api/bookings",
+      banquet: "/api/banquet",
+      restaurant: "/api/restaurant",
+    },
+  });
+});
 // 404 handler - This comes LAST
 app.use((req, res) => {
   console.log(`❌ 404 - Route not found: ${req.method} ${req.path}`);

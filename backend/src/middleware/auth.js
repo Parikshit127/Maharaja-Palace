@@ -1,20 +1,23 @@
-import jwt from 'jsonwebtoken';
-import { config } from '../config/env.js';
-import User from '../models/User.js';
+import jwt from "jsonwebtoken";
+import { config } from "../config/env.js";
+import User from "../models/User.js";
 
 export const protect = async (req, res, next) => {
   try {
     let token;
 
     // Check for token in headers
-    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-      token = req.headers.authorization.split(' ')[1];
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith("Bearer")
+    ) {
+      token = req.headers.authorization.split(" ")[1];
     }
 
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'No token provided, authorization denied',
+        message: "No token provided, authorization denied",
       });
     }
 
@@ -25,7 +28,7 @@ export const protect = async (req, res, next) => {
     if (!req.user) {
       return res.status(404).json({
         success: false,
-        message: 'User not found',
+        message: "User not found",
       });
     }
 
@@ -33,7 +36,7 @@ export const protect = async (req, res, next) => {
   } catch (error) {
     res.status(401).json({
       success: false,
-      message: 'Token is not valid',
+      message: "Token is not valid",
       error: error.message,
     });
   }
@@ -44,7 +47,7 @@ export const authorize = (...roles) => {
     if (!req.user) {
       return res.status(401).json({
         success: false,
-        message: 'User not authenticated',
+        message: "User not authenticated",
       });
     }
 

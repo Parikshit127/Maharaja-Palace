@@ -26,17 +26,17 @@ const BanquetBookingPage = () => {
   });
 
   const eventTypes = [
-    { value: 'wedding', label: 'Wedding', icon: '💑', desc: 'Celebrate your special day' },
-    { value: 'conference', label: 'Conference', icon: '💼', desc: 'Professional meetings' },
-    { value: 'party', label: 'Party', icon: '🎉', desc: 'Social celebrations' },
-    { value: 'corporate', label: 'Corporate Event', icon: '🏢', desc: 'Business gatherings' },
-    { value: 'other', label: 'Other', icon: '✨', desc: 'Custom events' }
+    { value: 'wedding', label: 'Wedding', desc: 'Celebrate your special day' },
+    { value: 'conference', label: 'Conference', desc: 'Professional meetings' },
+    { value: 'party', label: 'Party', desc: 'Social celebrations' },
+    { value: 'corporate', label: 'Corporate Event', desc: 'Business gatherings' },
+    { value: 'other', label: 'Other', desc: 'Custom events' }
   ];
 
   const setupTypes = [
-    { value: 'theater', label: 'Theater Style', icon: '🎭', desc: 'Rows of chairs facing stage' },
-    { value: 'cocktail', label: 'Cocktail Style', icon: '🍸', desc: 'Standing reception' },
-    { value: 'banquet', label: 'Banquet Style', icon: '🍽️', desc: 'Seated dining' }
+    { value: 'theater', label: 'Theater Style', desc: 'Rows of chairs facing stage' },
+    { value: 'cocktail', label: 'Cocktail Style', desc: 'Standing reception' },
+    { value: 'banquet', label: 'Banquet Style', desc: 'Seated dining' }
   ];
 
   useEffect(() => {

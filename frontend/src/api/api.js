@@ -92,7 +92,19 @@ api.interceptors.response.use(
         break;
 
       case 409:
-        showToast(data?.message || "This resource already exists.", "error");
+        // Special handling for booking conflicts
+        if (data?.conflictingBooking) {
+          showToast(
+            `${data.message} Room is booked from ${new Date(
+              data.conflictingBooking.checkIn
+            ).toLocaleDateString()} to ${new Date(
+              data.conflictingBooking.checkOut
+            ).toLocaleDateString()}`,
+            "error"
+          );
+        } else {
+          showToast(data?.message || "This resource already exists.", "error");
+        }
         break;
 
       case 500:
@@ -125,33 +137,59 @@ export const authAPI = {
 
 // Room APIs
 export const roomAPI = {
+  // Room Types
   getRoomTypes: () => api.get("/rooms/room-types"),
   createRoomType: (data) => api.post("/rooms/room-types", data),
   updateRoomType: (id, data) => api.put(`/rooms/room-types/${id}`, data),
   deleteRoomType: (id) => api.delete(`/rooms/room-types/${id}`),
-  getAvailableRooms: (params) => api.get("/rooms/available", { params }),
+
+  // Rooms
   getAllRooms: () => api.get("/rooms"),
   getRoomById: (id) => api.get(`/rooms/${id}`),
   createRoom: (data) => api.post("/rooms", data),
   updateRoom: (id, data) => api.put(`/rooms/${id}`, data),
   deleteRoom: (id) => api.delete(`/rooms/${id}`),
   updateRoomStatus: (id, status) => api.put(`/rooms/${id}/status`, { status }),
+
+  // Availability & Booking Validation
+  getAvailableRooms: (checkInOrParams, checkOut, guests) => {
+    const params =
+      typeof checkInOrParams === "object"
+        ? checkInOrParams
+        : { checkIn: checkInOrParams, checkOut, guests };
+
+    return api.get("/rooms/available", { params });
+  },
+
+  getAvailableRoomTypes: (checkIn, checkOut, guests) =>
+    api.get("/rooms/available-types", {
+      params: { checkIn, checkOut, guests: guests || 1 },
+    }),
+
+  checkRoomAvailability: (roomId, checkIn, checkOut) =>
+    api.get("/rooms/check-availability", {
+      params: { roomId, checkIn, checkOut },
+    }),
 };
 
 // Booking APIs
 export const bookingAPI = {
   createBooking: (data) => api.post("/bookings", data),
   getMyBookings: () => api.get("/bookings/me"),
-  getBookings: () => api.get("/bookings"),
+  getBookings: () => api.get("/bookings"), // Admin - get all bookings
+  getAllBookings: () => api.get("/bookings"), // Alias for consistency
   getBookingDetails: (id) => api.get(`/bookings/${id}`),
   cancelBooking: (id) => api.put(`/bookings/${id}/cancel`),
   updateBookingStatus: (id, status) =>
     api.put(`/bookings/${id}/status`, { status }),
   getUserBookings: (userId) => api.get(`/bookings/user/${userId}`),
+  validateBooking: (roomId, checkIn, checkOut) =>
+    roomAPI.checkRoomAvailability(roomId, checkIn, checkOut),
 };
 
 // Banquet APIs
 export const banquetAPI = {
+  // Halls
   getAllHalls: () => api.get("/banquet/halls"),
   createHall: (formData) => {
     return api.post("/banquet/halls", formData, {
@@ -168,20 +206,35 @@ export const banquetAPI = {
     });
   },
   deleteHall: (id) => api.delete(`/banquet/halls/${id}`),
+
+  // Bookings - ✅ ADDED MISSING FUNCTIONS
+  createBooking: (data) => api.post("/banquet/bookings", data),
   getAllBookings: () => api.get("/banquet/bookings"),
+  getMyBookings: () => api.get("/banquet/bookings/me"),
+  cancelBooking: (id) => api.put(`/banquet/bookings/${id}/cancel`),
+  updateBookingStatus: (id, status) =>
+    api.put(`/banquet/bookings/${id}/status`, { status }),
+
+  // Stats
   getStats: () => api.get("/banquet/stats"),
 };
 
 // Restaurant APIs
 export const restaurantAPI = {
+  // Tables
   getAllTables: () => api.get("/restaurant/tables"),
   getTableById: (id) => api.get(`/restaurant/tables/${id}`),
   createTable: (data) => api.post("/restaurant/tables", data),
   updateTable: (id, data) => api.put(`/restaurant/tables/${id}`, data),
   deleteTable: (id) => api.delete(`/restaurant/tables/${id}`),
+
+  // Bookings
   createBooking: (data) => api.post("/restaurant/bookings", data),
   getAllBookings: () => api.get("/restaurant/bookings"),
   getMyBookings: () => api.get("/restaurant/bookings/me"),
+  cancelBooking: (id) => api.put(`/restaurant/bookings/${id}/cancel`),
+  updateBookingStatus: (id, status) =>
+    api.put(`/restaurant/bookings/${id}/status`, { status }),
 };
 
 export default api;
