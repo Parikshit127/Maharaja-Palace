@@ -43,6 +43,28 @@ const restaurantBookingSchema = new mongoose.Schema(
       enum: ["pending", "confirmed", "completed", "cancelled", "no-show"],
       default: "pending",
     },
+    totalPrice: {
+      type: Number,
+      required: true,
+      default: 0
+    },
+    paidAmount: {
+      type: Number,
+      default: 0
+    },
+    bookingType: {
+      type: String,
+      enum: ['full', 'partial'],
+      default: 'full'
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['pending', 'partial', 'completed', 'failed', 'refunded'],
+      default: 'pending'
+    },
+    transactionId: {
+      type: String
+    },
   },
   {
     timestamps: true,

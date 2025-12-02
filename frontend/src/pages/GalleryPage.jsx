@@ -334,27 +334,39 @@ export const GalleryPage = () => {
           style={{ transform: `translateY(${parallaxOffset}px) scale(1.1)` }}
         >
           <img
-            src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=1920"
+            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920"
             alt="Gallery Hero"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#1a1a1a]/60 via-[#1a1a1a]/40 to-[#1a1a1a]/60" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/30 to-black/70" />
+          <div className="absolute inset-0 bg-[#0B1A33]/20" />
         </div>
         <div
           className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6"
           style={{ transform: `translateY(${scrollY * 0.2}px)` }}
         >
-          <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#B8860B] to-transparent mx-auto mb-8" />
-          <p className="text-sm uppercase tracking-[0.5em] text-[#B8860B] mb-6 font-light">
-            Visual Journey
-          </p>
-          <h1 className="royal-title text-7xl md:text-9xl text-white mb-6 tracking-wide drop-shadow-lg">
-            Gallery
-          </h1>
-          <p className="text-xl md:text-2xl text-white/90 max-w-2xl mx-auto font-light leading-relaxed drop-shadow-md">
-            A curated collection of moments that define royal elegance
-          </p>
-          <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#B8860B] to-transparent mx-auto mt-8" />
+          <div className="max-w-5xl mx-auto">
+            {/* Decorative top element */}
+
+            <p className="text-sm uppercase tracking-[0.5em] text-[#D4AF37] mb-8 font-light drop-shadow-lg animate-fadeIn">
+              Visual Journey Through Elegance
+            </p>
+
+            <h1 className="royal-title text-8xl md:text-[10rem] text-white mb-8 tracking-wide drop-shadow-2xl leading-none animate-fadeInUp">
+              Our Gallery
+            </h1>
+
+            <p className="text-xl md:text-2xl text-white/95 max-w-3xl mx-auto font-light leading-relaxed drop-shadow-lg mb-8 animate-fadeInUp" style={{ animationDelay: '0.2s' }}>
+              A curated collection of moments that define royal elegance and timeless luxury
+            </p>
+
+            {/* Decorative bottom element */}
+            <div className="flex items-center justify-center gap-4 mt-8 animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
+              <div className="w-24 h-[1px] bg-gradient-to-r from-transparent to-[#D4AF37]" />
+              <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />
+              <div className="w-24 h-[1px] bg-gradient-to-r from-[#D4AF37] to-transparent" />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -393,11 +405,10 @@ export const GalleryPage = () => {
             <button
               key={category.id}
               onClick={() => setSelectedCategory(category.id)}
-              className={`group relative px-8 py-4 transition-all duration-500 text-sm uppercase tracking-wider overflow-hidden rounded-lg ${
-                selectedCategory === category.id
+              className={`group relative px-8 py-4 transition-all duration-500 text-sm uppercase tracking-wider overflow-hidden rounded-lg ${selectedCategory === category.id
                   ? "text-white shadow-lg"
                   : "text-[#5a5a5a] hover:text-[#B8860B]"
-              }`}
+                }`}
               style={{
                 transform:
                   selectedCategory === category.id
@@ -406,11 +417,10 @@ export const GalleryPage = () => {
               }}
             >
               <span
-                className={`absolute inset-0 transition-all duration-500 rounded-lg ${
-                  selectedCategory === category.id
+                className={`absolute inset-0 transition-all duration-500 rounded-lg ${selectedCategory === category.id
                     ? "bg-gradient-to-r from-[#B8860B] to-[#D4AF37] opacity-100"
                     : "bg-white border border-[#B8860B]/30 opacity-100 group-hover:border-[#B8860B]"
-                }`}
+                  }`}
               />
               <span className="relative z-10 flex items-center gap-2">
                 {categoryIcons[category.id]}
@@ -429,11 +439,10 @@ export const GalleryPage = () => {
               key={item.id}
               data-gallery-item
               data-id={item.id}
-              className={`group relative overflow-hidden cursor-pointer transition-all duration-700 rounded-xl shadow-lg ${
-                visibleItems.has(String(item.id))
+              className={`group relative overflow-hidden cursor-pointer transition-all duration-700 rounded-xl shadow-lg ${visibleItems.has(String(item.id))
                   ? "opacity-100 translate-y-0"
                   : "opacity-0 translate-y-12"
-              } ${index % 5 === 0 ? "sm:col-span-2 sm:row-span-2" : ""}`}
+                } ${index % 5 === 0 ? "sm:col-span-2 sm:row-span-2" : ""}`}
               style={{
                 transitionDelay: `${(index % 8) * 100}ms`,
                 aspectRatio: index % 5 === 0 ? "1" : "4/5",
@@ -585,11 +594,10 @@ export const GalleryPage = () => {
                     setLightboxIndex(idx);
                     setLightboxImage(filteredImages[idx]);
                   }}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    idx === lightboxIndex
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === lightboxIndex
                       ? "bg-[#B8860B] w-8"
                       : "bg-[#B8860B]/30 hover:bg-[#B8860B]/50"
-                  }`}
+                    }`}
                 />
               ))}
             </div>

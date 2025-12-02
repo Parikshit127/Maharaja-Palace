@@ -10,6 +10,19 @@ import {
   Star,
   Check,
   AlertCircle,
+  Wifi,
+  Coffee,
+  Tv,
+  Wind,
+  Phone,
+  Shield,
+  Droplets,
+  Sparkles,
+  UtensilsCrossed,
+  Clock,
+  Shirt,
+  Bath,
+  Armchair,
 } from "lucide-react";
 
 export const RoomDetailsPage = () => {
@@ -130,60 +143,96 @@ export const RoomDetailsPage = () => {
       "Maharaja Suite": {
         size: "80 sq. m.",
         features: [
-          "King-size bed with handcrafted décor",
-          "Marble bathroom with soaking tub and premium amenities",
-          "Elegant living area for relaxation or dining",
-          "Large windows with courtyard or palace views",
-          "Personalized butler service",
-          "Curated artefacts reflecting royal legacy",
-          "Modern amenities including Wi-Fi and minibar",
+          { icon: "Wifi", text: "Complimentary High-Speed Wi-Fi" },
+          { icon: "Coffee", text: "24/7 In-Room Dining Service" },
+          { icon: "Tv", text: "65\" Smart TV with Premium Channels" },
+          { icon: "Wind", text: "Individual Climate Control" },
+          { icon: "Bath", text: "Marble Bathroom with Jacuzzi & Rain Shower" },
+          { icon: "Sparkles", text: "Premium Toiletries & Bathrobes" },
+          { icon: "UtensilsCrossed", text: "Complimentary Breakfast Included" },
+          { icon: "Phone", text: "Dedicated Butler Service" },
+          { icon: "Shirt", text: "Complimentary Laundry & Dry Cleaning" },
+          { icon: "Shield", text: "In-Room Safe & Security" },
+          { icon: "Armchair", text: "Separate Living & Dining Area" },
+          { icon: "Droplets", text: "Premium Minibar with Beverages" },
+          { icon: "Clock", text: "Express Check-in/Check-out" },
+          { icon: "Sparkles", text: "Daily Housekeeping & Turndown Service" },
         ],
       },
       "Maharani Suite": {
         size: "75 sq. m.",
         features: [
-          "King-size bed with fine linen and artisanal décor",
-          "Lavish marble bathroom with soaking tub and premium amenities",
-          "Cozy living area ideal for leisure or intimate dining",
-          "Large windows with soothing courtyard or garden views",
-          "Personalized butler service",
-          "Handcrafted artefacts celebrating royal elegance",
-          "Modern amenities including Wi-Fi and minibar",
+          { icon: "Wifi", text: "Complimentary High-Speed Wi-Fi" },
+          { icon: "Coffee", text: "24/7 In-Room Dining Service" },
+          { icon: "Tv", text: "55\" Smart TV with Premium Channels" },
+          { icon: "Wind", text: "Individual Climate Control" },
+          { icon: "Bath", text: "Luxurious Marble Bathroom with Soaking Tub" },
+          { icon: "Sparkles", text: "Premium Toiletries & Plush Bathrobes" },
+          { icon: "UtensilsCrossed", text: "Complimentary Breakfast Included" },
+          { icon: "Phone", text: "Personalized Butler Service" },
+          { icon: "Shirt", text: "Complimentary Laundry Service" },
+          { icon: "Shield", text: "Electronic Safe & Security" },
+          { icon: "Armchair", text: "Elegant Sitting Area" },
+          { icon: "Droplets", text: "Curated Minibar Selection" },
+          { icon: "Clock", text: "Priority Check-in/Check-out" },
+          { icon: "Sparkles", text: "Twice Daily Housekeeping" },
         ],
       },
       "Yuvraj Suite": {
         size: "64 sq. m.",
         features: [
-          "King-size bed with handcrafted décor",
-          "Marble bathroom with soaking tub and premium amenities",
-          "Elegant living area for relaxation or dining",
-          "Large windows with courtyard or palace views",
-          "Personalized butler service",
-          "Curated artefacts reflecting royal legacy",
-          "Modern amenities including Wi-Fi and minibar",
+          { icon: "Wifi", text: "Complimentary High-Speed Wi-Fi" },
+          { icon: "Coffee", text: "24-Hour Room Service" },
+          { icon: "Tv", text: "50\" Smart TV with Streaming Services" },
+          { icon: "Wind", text: "Dual Zone Climate Control" },
+          { icon: "Bath", text: "Designer Bathroom with Rain Shower" },
+          { icon: "Sparkles", text: "Luxury Amenities & Bathrobes" },
+          { icon: "UtensilsCrossed", text: "Complimentary Breakfast" },
+          { icon: "Phone", text: "Concierge Service Available" },
+          { icon: "Shirt", text: "Same-Day Laundry Service" },
+          { icon: "Shield", text: "In-Room Safe" },
+          { icon: "Armchair", text: "Comfortable Lounge Area" },
+          { icon: "Droplets", text: "Well-Stocked Minibar" },
+          { icon: "Clock", text: "Flexible Check-in/Check-out" },
+          { icon: "Sparkles", text: "Daily Housekeeping Service" },
         ],
       },
       "Executive Room": {
         size: "32 sq. m.",
         features: [
-          "Plush king-size or twin beds",
-          "Contemporary bathroom with premium amenities",
-          "Comfortable seating area for work or relaxation",
-          "Large windows with courtyard or garden views",
-          "Personalized butler service",
-          "Curated artefacts reflecting royal legacy",
-          "Modern amenities including Wi-Fi and minibar",
+          { icon: "Wifi", text: "Free High-Speed Wi-Fi" },
+          { icon: "Coffee", text: "24-Hour Room Service" },
+          { icon: "Tv", text: "43\" Smart TV with Cable Channels" },
+          { icon: "Wind", text: "Air Conditioning & Heating" },
+          { icon: "Bath", text: "Modern Bathroom with Walk-in Shower" },
+          { icon: "Sparkles", text: "Premium Toiletries Provided" },
+          { icon: "UtensilsCrossed", text: "Complimentary Breakfast" },
+          { icon: "Phone", text: "24/7 Front Desk Service" },
+          { icon: "Shirt", text: "Laundry & Ironing Service" },
+          { icon: "Shield", text: "Electronic Safe" },
+          { icon: "Armchair", text: "Work Desk & Seating Area" },
+          { icon: "Droplets", text: "Minibar & Coffee/Tea Maker" },
+          { icon: "Clock", text: "Express Services Available" },
+          { icon: "Sparkles", text: "Daily Housekeeping" },
         ],
       },
       "Standard Room": {
         size: "22 sq. m.",
         features: [
-          "Comfortable queen-size or twin beds",
-          "Modern bathroom with premium amenities",
-          "Cozy seating area for relaxation",
-          "Windows with courtyard or garden views",
-          "High-speed Wi-Fi and essential in-room facilities",
-          "Subtle décor reflecting heritage charm",
+          { icon: "Wifi", text: "Complimentary Wi-Fi Access" },
+          { icon: "Coffee", text: "Room Service Available" },
+          { icon: "Tv", text: "32\" LED TV with Satellite Channels" },
+          { icon: "Wind", text: "Air Conditioning" },
+          { icon: "Bath", text: "Private Bathroom with Shower" },
+          { icon: "Sparkles", text: "Quality Toiletries & Towels" },
+          { icon: "UtensilsCrossed", text: "Breakfast Available" },
+          { icon: "Phone", text: "24-Hour Reception" },
+          { icon: "Shirt", text: "Laundry Service on Request" },
+          { icon: "Shield", text: "In-Room Safe" },
+          { icon: "Armchair", text: "Comfortable Seating" },
+          { icon: "Droplets", text: "Tea/Coffee Making Facilities" },
+          { icon: "Clock", text: "Standard Check-in/Check-out" },
+          { icon: "Sparkles", text: "Daily Housekeeping" },
         ],
       },
     };
@@ -275,6 +324,26 @@ export const RoomDetailsPage = () => {
 
   const today = new Date().toISOString().split("T")[0];
 
+  // Icon mapping function
+  const getIcon = (iconName) => {
+    const icons = {
+      Wifi: <Wifi className="w-5 h-5" />,
+      Coffee: <Coffee className="w-5 h-5" />,
+      Tv: <Tv className="w-5 h-5" />,
+      Wind: <Wind className="w-5 h-5" />,
+      Bath: <Bath className="w-5 h-5" />,
+      Sparkles: <Sparkles className="w-5 h-5" />,
+      UtensilsCrossed: <UtensilsCrossed className="w-5 h-5" />,
+      Phone: <Phone className="w-5 h-5" />,
+      Shirt: <Shirt className="w-5 h-5" />,
+      Shield: <Shield className="w-5 h-5" />,
+      Armchair: <Armchair className="w-5 h-5" />,
+      Droplets: <Droplets className="w-5 h-5" />,
+      Clock: <Clock className="w-5 h-5" />,
+    };
+    return icons[iconName] || <Check className="w-5 h-5" />;
+  };
+
   return (
     <div className="min-h-screen bg-[#FBF9F4]">
       {/* Hero Image Carousel */}
@@ -284,9 +353,8 @@ export const RoomDetailsPage = () => {
             key={index}
             src={image}
             alt={`${room.name} ${index + 1}`}
-            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${
-              index === currentImageIndex ? "opacity-100" : "opacity-0"
-            }`}
+            className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ${index === currentImageIndex ? "opacity-100" : "opacity-0"
+              }`}
           />
         ))}
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
@@ -311,9 +379,8 @@ export const RoomDetailsPage = () => {
             <button
               key={index}
               onClick={() => setCurrentImageIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentImageIndex ? "bg-white w-8" : "bg-white/50"
-              }`}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentImageIndex ? "bg-white w-8" : "bg-white/50"
+                }`}
             />
           ))}
         </div>
@@ -371,19 +438,21 @@ export const RoomDetailsPage = () => {
               </div>
             </div>
 
-            {/* Amenities */}
+            {/* Amenities & Features */}
             <div>
               <h2 className="text-3xl font-serif text-[#2a2a2a] mb-6">
-                Amenities
+                Room Amenities & Features
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {room.amenities.map((amenity, index) => (
                   <div
                     key={index}
-                    className="flex items-center gap-3 bg-white rounded-lg p-4 border border-[#B8860B]/10"
+                    className="flex items-start gap-4 bg-white rounded-lg p-5 border border-[#B8860B]/10 hover:border-[#B8860B]/30 hover:shadow-md transition-all duration-300"
                   >
-                    <Check className="w-5 h-5 text-[#B8860B] flex-shrink-0" />
-                    <span className="text-[#2a2a2a]">{amenity}</span>
+                    <div className="flex-shrink-0 w-10 h-10 rounded-full bg-[#B8860B]/10 flex items-center justify-center text-[#B8860B]">
+                      {getIcon(amenity.icon)}
+                    </div>
+                    <span className="text-[#2a2a2a] font-medium pt-2">{amenity.text}</span>
                   </div>
                 ))}
               </div>
@@ -526,11 +595,10 @@ export const RoomDetailsPage = () => {
                 disabled={
                   !availabilityStatus?.available || checkingAvailability
                 }
-                className={`w-full py-4 font-bold rounded-lg transition-all duration-300 transform ${
-                  availabilityStatus?.available && !checkingAvailability
-                    ? "bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-white hover:shadow-lg hover:scale-105"
-                    : "bg-gray-300 text-gray-500 cursor-not-allowed"
-                }`}
+                className={`w-full py-4 font-bold rounded-lg transition-all duration-300 transform ${availabilityStatus?.available && !checkingAvailability
+                  ? "bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-white hover:shadow-lg hover:scale-105"
+                  : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                  }`}
               >
                 {checkingAvailability ? "Checking..." : "Book Now"}
               </button>

@@ -45,7 +45,12 @@ export const register = async (req, res, next) => {
     const token = generateToken(user._id);
 
     // Send welcome email
-    await sendWelcomeEmail(user);
+    try {
+      await sendWelcomeEmail(user);
+    } catch (emailError) {
+      logger.error(`Failed to send welcome email wrapper: ${emailError.message}`);
+      // Continue execution - don't fail registration just because email failed
+    }
 
     logger.info(`New user registered: ${user.email}`);
 

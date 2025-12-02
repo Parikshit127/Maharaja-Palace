@@ -135,41 +135,41 @@ const RestaurantPage = () => {
 
       {/* Hero Section with Parallax */}
       <section ref={heroRef} className="relative h-screen overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ 
-            backgroundImage: 'url(https://images.unsplash.com/photo-1544148103-0773bf10d330?w=1600)',
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1550966871-3ed3cdb5ed0c?w=1920)',
             transform: `translateY(${parallaxOffset}px)`
           }}
         >
-          <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/40 to-black/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-white/30 via-black/20 to-black/70"></div>
         </div>
-        
+
         <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6">
           <div className="animate-fadeInUp">
             <div className="w-20 h-[1px] bg-[#D4AF37] mx-auto mb-6"></div>
-            <p className="text-sm uppercase tracking-[0.4em] text-[#D4AF37] mb-4 animate-fadeIn" style={{animationDelay: '0.3s'}}>
+            <p className="text-sm uppercase tracking-[0.4em] text-[#D4AF37] mb-4 animate-fadeIn drop-shadow-lg" style={{ animationDelay: '0.3s' }}>
               Culinary Artistry Since 1947
             </p>
-            <h1 className="royal-title text-7xl md:text-9xl text-white mb-6 tracking-tight animate-fadeInUp" style={{animationDelay: '0.5s'}}>
+            <h1 className="royal-title text-7xl md:text-9xl text-white mb-6 tracking-tight animate-fadeInUp drop-shadow-2xl" style={{ animationDelay: '0.5s' }}>
               Exquisite Dining
             </h1>
-            <p className="text-xl md:text-2xl text-white/90 max-w-3xl mx-auto mb-12 font-light leading-relaxed animate-fadeInUp" style={{animationDelay: '0.7s'}}>
+            <p className="text-xl md:text-2xl text-white/95 max-w-3xl mx-auto mb-12 font-light leading-relaxed animate-fadeInUp drop-shadow-lg" style={{ animationDelay: '0.7s' }}>
               A symphony of flavors, crafted by masters, served in palatial elegance
             </p>
-            <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fadeInUp" style={{animationDelay: '0.9s'}}>
-              <button 
+            <div className="flex flex-col sm:flex-row gap-6 justify-center animate-fadeInUp" style={{ animationDelay: '0.9s' }}>
+              <button
                 onClick={() => window.location.href = '/restaurant/book'}
-                className="group relative px-10 py-5 bg-[#D4AF37] text-[#0B1A33] font-semibold tracking-wider overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-[#D4AF37]/50">
+                className="group relative px-10 py-5 bg-[#D4AF37] text-[#0B1A33] font-semibold tracking-wider overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-[#D4AF37]/50 rounded-sm">
                 <span className="relative z-10 flex items-center justify-center gap-2">
                   RESERVE YOUR TABLE
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-2 transition-transform duration-300" />
                 </span>
                 <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
               </button>
-              <button 
+              <button
                 onClick={() => window.location.href = '/contact'}
-                className="px-10 py-5 border-2 border-white text-white font-semibold tracking-wider hover:bg-white hover:text-[#0B1A33] transition-all duration-500">
+                className="px-10 py-5 border-2 border-white text-white font-semibold tracking-wider hover:bg-white hover:text-[#0B1A33] transition-all duration-500 rounded-sm backdrop-blur-sm">
                 EXPLORE MENUS
               </button>
             </div>
@@ -183,7 +183,7 @@ const RestaurantPage = () => {
           <div className="absolute top-20 left-10 w-72 h-72 bg-[#D4AF37] rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 right-10 w-96 h-96 bg-[#8B7355] rounded-full blur-3xl"></div>
         </div>
-        
+
         <div className="max-w-5xl mx-auto text-center relative z-10">
           <div className="w-20 h-[2px] bg-[#D4AF37] mx-auto mb-8"></div>
           <p className="text-sm uppercase tracking-[0.4em] text-[#D4AF37] mb-6">A Gastronomic Legacy</p>
@@ -191,8 +191,8 @@ const RestaurantPage = () => {
             Where Royalty Dines
           </h2>
           <p className="text-xl text-gray-600 leading-relaxed max-w-4xl mx-auto">
-            Maharaja Palace welcomes discerning guests to an unparalleled dining journey. 
-            From the royal kitchens of India to global culinary traditions, each restaurant 
+            Maharaja Palace welcomes discerning guests to an unparalleled dining journey.
+            From the royal kitchens of India to global culinary traditions, each restaurant
             tells a story of heritage, passion, and extraordinary craftsmanship.
           </p>
         </div>
@@ -201,13 +201,13 @@ const RestaurantPage = () => {
       {/* Premium Features */}
       <section className="py-20 bg-gradient-to-br from-[#0B1A33] to-[#1a2940] relative overflow-hidden">
         <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 left-0 w-full h-full" style={{backgroundImage: 'radial-gradient(circle at 2px 2px, #D4AF37 1px, transparent 0)', backgroundSize: '50px 50px'}}></div>
+          <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #D4AF37 1px, transparent 0)', backgroundSize: '50px 50px' }}></div>
         </div>
-        
+
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
             {features.map((feature, index) => (
-              <div 
+              <div
                 key={index}
                 className="group text-center transform hover:-translate-y-4 transition-all duration-500"
               >
@@ -235,11 +235,10 @@ const RestaurantPage = () => {
 
           <div className="space-y-32">
             {restaurants.map((restaurant, index) => (
-              <div 
+              <div
                 key={restaurant._id}
-                className={`grid grid-cols-1 lg:grid-cols-2 gap-16 items-center ${
-                  index % 2 === 1 ? 'lg:grid-flow-dense' : ''
-                }`}
+                className={`grid grid-cols-1 lg:grid-cols-2 gap-16 items-center ${index % 2 === 1 ? 'lg:grid-flow-dense' : ''
+                  }`}
                 onMouseEnter={() => setActiveRestaurant(restaurant._id)}
                 onMouseLeave={() => setActiveRestaurant(null)}
               >
@@ -272,7 +271,7 @@ const RestaurantPage = () => {
                       {restaurant.name}
                     </h3>
                   </div>
-                  
+
                   <div className="flex flex-wrap gap-3">
                     <span className="bg-white px-5 py-2 text-sm text-gray-700 border border-gray-200 rounded-full shadow-sm">
                       {restaurant.cuisine}
@@ -305,7 +304,7 @@ const RestaurantPage = () => {
                     <p className="text-gray-700 font-medium text-lg">{restaurant.timing}</p>
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => window.location.href = '/restaurant/book'}
                     className="group relative px-10 py-5 bg-[#0B1A33] text-white font-semibold tracking-wider overflow-hidden transition-all duration-500 hover:shadow-2xl w-full sm:w-auto">
                     <span className="relative z-10 flex items-center justify-center gap-2">
@@ -338,14 +337,13 @@ const RestaurantPage = () => {
             {testimonials.map((testimonial, index) => (
               <div
                 key={index}
-                className={`transition-all duration-1000 ${
-                  index === currentTestimonial ? 'opacity-100 scale-100' : 'opacity-0 scale-95 absolute inset-0'
-                }`}
+                className={`transition-all duration-1000 ${index === currentTestimonial ? 'opacity-100 scale-100' : 'opacity-0 scale-95 absolute inset-0'
+                  }`}
               >
                 <div className="bg-white/5 backdrop-blur-xl rounded-2xl p-12 border border-white/10 shadow-2xl">
                   <div className="flex items-center gap-6 mb-8">
-                    <img 
-                      src={testimonial.image} 
+                    <img
+                      src={testimonial.image}
                       alt={testimonial.name}
                       className="w-20 h-20 rounded-full object-cover border-4 border-[#D4AF37]"
                     />
@@ -372,9 +370,8 @@ const RestaurantPage = () => {
                 <button
                   key={index}
                   onClick={() => setCurrentTestimonial(index)}
-                  className={`w-3 h-3 rounded-full transition-all duration-500 ${
-                    index === currentTestimonial ? 'bg-[#D4AF37] w-12' : 'bg-white/30 hover:bg-white/50'
-                  }`}
+                  className={`w-3 h-3 rounded-full transition-all duration-500 ${index === currentTestimonial ? 'bg-[#D4AF37] w-12' : 'bg-white/30 hover:bg-white/50'
+                    }`}
                 />
               ))}
             </div>
@@ -384,13 +381,13 @@ const RestaurantPage = () => {
 
       {/* Final CTA */}
       <section className="relative h-[70vh] flex items-center justify-center overflow-hidden">
-        <div 
+        <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: 'url(https://images.unsplash.com/photo-1551632436-cbf8dd35adfa?w=1600)' }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-black/80 via-black/70 to-black/80"></div>
         </div>
-        
+
         <div className="relative z-10 text-center text-white px-6 max-w-4xl mx-auto">
           <div className="w-20 h-[1px] bg-[#D4AF37] mx-auto mb-8"></div>
           <h2 className="royal-title text-6xl md:text-8xl mb-8 tracking-tight leading-tight">
@@ -400,7 +397,7 @@ const RestaurantPage = () => {
             Reserve your table at Maharaja Palace today
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
-            <button 
+            <button
               onClick={() => window.location.href = '/restaurant/book'}
               className="group relative px-12 py-6 bg-[#D4AF37] text-[#0B1A33] font-bold tracking-wider text-lg overflow-hidden transition-all duration-500 hover:shadow-2xl hover:shadow-[#D4AF37]/50">
               <span className="relative z-10 flex items-center justify-center gap-3">
@@ -409,7 +406,7 @@ const RestaurantPage = () => {
               </span>
               <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
             </button>
-            <button 
+            <button
               onClick={() => window.location.href = '/contact'}
               className="px-12 py-6 border-2 border-white text-white font-bold tracking-wider text-lg hover:bg-white hover:text-[#0B1A33] transition-all duration-500 flex items-center justify-center gap-3">
               <Phone className="w-5 h-5" />

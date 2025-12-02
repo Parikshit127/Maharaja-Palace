@@ -170,6 +170,18 @@ export const createRestaurantBooking = async (req, res, next) => {
       });
     }
 
+    // Calculate total price (₹500 per guest reservation fee)
+    const pricePerGuest = 500;
+    const totalPrice = numberOfGuests * pricePerGuest;
+    const bookingType = req.body.bookingType || 'full';
+
+    let paidAmount = 0;
+    if (bookingType === 'partial') {
+      paidAmount = Math.round(totalPrice * 0.10); // 10% for partial
+    } else {
+      paidAmount = totalPrice; // Full payment
+    }
+
     // Create the booking
     const booking = await RestaurantBooking.create({
       guest: req.user.id,
@@ -180,6 +192,10 @@ export const createRestaurantBooking = async (req, res, next) => {
       specialDietaryRequirements: specialDietaryRequirements || "",
       specialRequests: specialRequests || "",
       status: "pending",
+      totalPrice,
+      paidAmount,
+      bookingType,
+      paymentStatus: 'pending' // Initially pending until payment is confirmed
     });
 
     // Populate guest and table information
@@ -216,6 +232,54 @@ export const createRestaurantBooking = async (req, res, next) => {
       });
     }
 
+    next(error);
+  }
+};
+
+// Guest - Update Booking Payment
+export const updateRestaurantBookingPayment = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { amount, paymentId } = req.body;
+
+    const booking = await RestaurantBooking.findById(id);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found',
+      });
+    }
+
+    // Check if user is the booking owner
+    if (booking.guest.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to update this booking',
+      });
+    }
+
+    booking.paidAmount = (booking.paidAmount || 0) + Number(amount);
+    booking.transactionId = paymentId;
+
+    if (booking.paidAmount >= booking.totalPrice) {
+      booking.paymentStatus = 'completed';
+      booking.status = 'confirmed'; // Auto-confirm if fully paid
+    } else {
+      booking.paymentStatus = 'partial';
+    }
+
+    await booking.save();
+
+    logger.info(`Restaurant booking payment updated: ${booking.bookingNumber}, Amount: ${amount}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Payment updated successfully',
+      booking,
+    });
+  } catch (error) {
+    logger.error(`Update restaurant booking payment error: ${error.message}`);
     next(error);
   }
 };

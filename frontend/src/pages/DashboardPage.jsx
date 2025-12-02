@@ -90,6 +90,84 @@ export const DashboardPage = () => {
     setSelectedBooking(null);
   };
 
+  // 🔹 NEW: Load Razorpay Script
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  // 🔹 NEW: Handle Pay Remaining
+  const handlePayRemaining = async (booking) => {
+    try {
+      const scriptLoaded = await loadRazorpayScript();
+      if (!scriptLoaded) {
+        alert('Razorpay SDK failed to load');
+        return;
+      }
+
+      const remainingAmount = booking.totalPrice - (booking.paidAmount || 0);
+
+      const options = {
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_RmTd6UtrZwwmTT',
+        amount: remainingAmount * 100,
+        currency: 'INR',
+        name: 'Maharaja Palace',
+        description: `Remaining Payment for ${booking.bookingNumber}`,
+        image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=200',
+        handler: async function (response) {
+          console.log('Payment successful:', response);
+
+          try {
+            // Update payment in backend
+            if (booking.type === 'room') {
+              await bookingAPI.updatePayment(booking._id, {
+                amount: remainingAmount,
+                paymentId: response.razorpay_payment_id
+              });
+            } else if (booking.type === 'banquet') {
+              await banquetAPI.updatePayment(booking._id, {
+                amount: remainingAmount,
+                paymentId: response.razorpay_payment_id
+              });
+            } else if (booking.type === 'restaurant') {
+              await restaurantAPI.updatePayment(booking._id, {
+                amount: remainingAmount,
+                paymentId: response.razorpay_payment_id
+              });
+            }
+
+            // Reload bookings
+            loadBookings();
+            if (selectedBooking) closeDetails();
+            alert('Payment successful!');
+          } catch (error) {
+            console.error('Failed to update payment status:', error);
+            alert('Payment successful but failed to update status. Please contact support.');
+          }
+        },
+        prefill: {
+          name: `${user?.firstName} ${user?.lastName}`,
+          email: user?.email,
+          contact: user?.phone || '',
+        },
+        theme: {
+          color: '#B8860B',
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error) {
+      console.error('Payment initialization failed:', error);
+      alert('Failed to initialize payment');
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#FBF9F4] flex items-center justify-center">
@@ -129,17 +207,6 @@ export const DashboardPage = () => {
                 Manage your royal experiences
               </p>
             </div>
-            {/* <div className="flex items-center gap-4">
-              <div className="text-right">
-                <p className="text-sm text-white/60">Member Since</p>
-                <p className="text-lg font-semibold">
-                  {new Date(user?.createdAt).toLocaleDateString("en-US", {
-                    month: "short",
-                    year: "numeric",
-                  })}
-                </p>
-              </div>
-            </div> */}
           </div>
         </div>
       </div>
@@ -147,6 +214,7 @@ export const DashboardPage = () => {
       <div className="max-w-7xl mx-auto px-6 -mt-8 pb-16">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+          {/* ... stats cards ... */}
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-[#B8860B]/20 transform hover:scale-105 transition-transform duration-300">
             <div className="flex items-center justify-between mb-4">
               <div className="w-12 h-12 bg-gradient-to-br from-[#B8860B] to-[#D4AF37] rounded-xl flex items-center justify-center">
@@ -250,11 +318,10 @@ export const DashboardPage = () => {
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`px-8 py-4 font-semibold transition-all duration-300 border-b-2 whitespace-nowrap ${
-                    activeTab === tab.id
-                      ? "border-[#B8860B] text-[#B8860B] bg-[#B8860B]/5"
-                      : "border-transparent text-[#6a6a6a] hover:text-[#B8860B] hover:bg-[#B8860B]/5"
-                  }`}
+                  className={`px-8 py-4 font-semibold transition-all duration-300 border-b-2 whitespace-nowrap ${activeTab === tab.id
+                    ? "border-[#B8860B] text-[#B8860B] bg-[#B8860B]/5"
+                    : "border-transparent text-[#6a6a6a] hover:text-[#B8860B] hover:bg-[#B8860B]/5"
+                    }`}
                 >
                   {tab.label} ({tab.count})
                 </button>
@@ -311,15 +378,30 @@ export const DashboardPage = () => {
                             ₹{booking.totalPrice.toLocaleString()}
                           </p>
                           {booking.paymentStatus && (
-                            <p
-                              className={`text-sm font-semibold ${getPaymentStatusColor(
-                                booking.paymentStatus
-                              )}`}
-                            >
-                              {booking.paymentStatus === "completed"
-                                ? "✓ Paid"
-                                : booking.paymentStatus}
-                            </p>
+                            <div className="flex flex-col items-end">
+                              <p
+                                className={`text-sm font-semibold ${getPaymentStatusColor(
+                                  booking.paymentStatus
+                                )}`}
+                              >
+                                {booking.paymentStatus === "completed"
+                                  ? "✓ Paid"
+                                  : booking.paymentStatus === "partial"
+                                    ? `Partial (${Math.round((booking.paidAmount / booking.totalPrice) * 100)}%)`
+                                    : booking.paymentStatus}
+                              </p>
+                              {booking.paymentStatus === "partial" && booking.status !== 'cancelled' && (
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handlePayRemaining(booking);
+                                  }}
+                                  className="mt-2 text-xs bg-[#B8860B] text-white px-3 py-1 rounded hover:bg-[#8B6914] transition-colors"
+                                >
+                                  Pay Remaining ₹{(booking.totalPrice - (booking.paidAmount || 0)).toLocaleString()}
+                                </button>
+                              )}
+                            </div>
                           )}
                         </div>
                       )}
@@ -463,17 +545,17 @@ export const DashboardPage = () => {
                     {(booking.specialRequests ||
                       booking.specialRequirements ||
                       booking.specialDietaryRequirements) && (
-                      <div className="bg-[#B8860B]/5 rounded-lg p-4 mb-4">
-                        <p className="text-xs text-[#6a6a6a] mb-1">
-                          Special Requests
-                        </p>
-                        <p className="text-sm text-[#2a2a2a]">
-                          {booking.specialRequests ||
-                            booking.specialRequirements ||
-                            booking.specialDietaryRequirements}
-                        </p>
-                      </div>
-                    )}
+                        <div className="bg-[#B8860B]/5 rounded-lg p-4 mb-4">
+                          <p className="text-xs text-[#6a6a6a] mb-1">
+                            Special Requests
+                          </p>
+                          <p className="text-sm text-[#2a2a2a]">
+                            {booking.specialRequests ||
+                              booking.specialRequirements ||
+                              booking.specialDietaryRequirements}
+                          </p>
+                        </div>
+                      )}
 
                     <div className="flex items-center justify-between pt-4 border-t border-[#B8860B]/10">
                       <p className="text-xs text-[#6a6a6a]">
@@ -627,21 +709,39 @@ export const DashboardPage = () => {
             {(selectedBooking.specialRequests ||
               selectedBooking.specialRequirements ||
               selectedBooking.specialDietaryRequirements) && (
-              <div className="mt-2 p-3 bg-[#B8860B]/10 rounded-lg">
-                <p className="font-semibold text-gray-800 mb-1">
-                  Special Requests:
-                </p>
-                <p className="text-gray-700 text-sm">
-                  {selectedBooking.specialRequests ||
-                    selectedBooking.specialRequirements ||
-                    selectedBooking.specialDietaryRequirements}
-                </p>
+                <div className="mt-2 p-3 bg-[#B8860B]/10 rounded-lg">
+                  <p className="font-semibold text-gray-800 mb-1">
+                    Special Requests:
+                  </p>
+                  <p className="text-gray-700 text-sm">
+                    {selectedBooking.specialRequests ||
+                      selectedBooking.specialRequirements ||
+                      selectedBooking.specialDietaryRequirements}
+                  </p>
+                </div>
+              )}
+
+            {/* Pay Remaining Button in Modal */}
+            {selectedBooking.paymentStatus === "partial" && selectedBooking.status !== 'cancelled' && (
+              <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <div className="flex justify-between items-center mb-2">
+                  <span className="text-sm font-semibold text-yellow-800">Remaining Balance</span>
+                  <span className="text-lg font-bold text-[#B8860B]">
+                    ₹{(selectedBooking.totalPrice - (selectedBooking.paidAmount || 0)).toLocaleString()}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handlePayRemaining(selectedBooking)}
+                  className="w-full bg-[#B8860B] text-white py-2 rounded-lg font-semibold hover:bg-[#8B6914] transition-colors"
+                >
+                  Pay Remaining Balance
+                </button>
               </div>
             )}
 
             <button
               onClick={closeDetails}
-              className="mt-6 w-full bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-white py-3 rounded-lg font-semibold hover:shadow-lg transition"
+              className="mt-6 w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-200 transition"
             >
               Close
             </button>

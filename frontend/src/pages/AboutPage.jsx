@@ -28,9 +28,8 @@ const AnimatedCard = ({ children, delay = 0 }) => {
   return (
     <div
       ref={ref}
-      className={`transition-all duration-700 ${
-        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
-      }`}
+      className={`transition-all duration-700 ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+        }`}
     >
       {children}
     </div>
@@ -75,15 +74,101 @@ export const AboutPage = () => {
           font-family: 'Playfair Display', Georgia, serif;
           font-weight: 600;
         }
+
+        @keyframes fadeIn {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
+
+        @keyframes fadeInUp {
+          from { 
+            opacity: 0; 
+            transform: translateY(30px); 
+          }
+          to { 
+            opacity: 1; 
+            transform: translateY(0); 
+          }
+        }
+
+        .animate-fadeIn {
+          animation: fadeIn 0.8s ease-out forwards;
+          opacity: 0;
+        }
+
+        .animate-fadeInUp {
+          animation: fadeInUp 1s ease-out forwards;
+          opacity: 0;
+        }
       `}</style>
 
-      {/* HERO */}
-      <HeroSection
-        title="Our Story"
-        subtitle="About Maharaja Palace"
-        backgroundImage="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1600"
-        height="h-screen"
-      />
+      {/* ENHANCED HERO SECTION */}
+      <section className="relative h-screen overflow-hidden">
+        {/* Parallax Background */}
+        <div
+          className="absolute inset-0 bg-cover bg-center scale-110"
+          style={{
+            backgroundImage: 'url(https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920)',
+            transform: `translateY(${typeof window !== 'undefined' ? window.scrollY * 0.5 : 0}px)`,
+          }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/40 to-black/70" />
+        </div>
+
+        {/* Decorative Elements */}
+        <div className="absolute inset-0 opacity-30">
+          <div className="absolute top-20 left-20 w-96 h-96 bg-[#D4AF37]/20 rounded-full blur-[150px]" />
+          <div className="absolute bottom-20 right-20 w-96 h-96 bg-[#B8860B]/20 rounded-full blur-[150px]" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 h-full flex flex-col justify-center items-center text-center px-6">
+          <div className="max-w-5xl mx-auto">
+            {/* Animated decorative top */}
+            <div className="flex items-center justify-center gap-4 mb-8 animate-fadeIn">
+              <div className="w-16 h-[2px] bg-gradient-to-r from-transparent to-[#D4AF37]" />
+              <div className="w-4 h-4 rotate-45 border-2 border-[#D4AF37]" />
+              <div className="w-16 h-[2px] bg-gradient-to-r from-[#D4AF37] to-transparent" />
+            </div>
+
+            {/* Subtitle */}
+            <p className="text-sm uppercase tracking-[0.5em] text-[#D4AF37] mb-6 font-light drop-shadow-lg animate-fadeIn" style={{ animationDelay: '0.2s' }}>
+              About Maharaja Palace
+            </p>
+
+            {/* Main Title */}
+            <h1 className="royal-title text-7xl md:text-9xl text-white mb-8 leading-none drop-shadow-2xl animate-fadeInUp" style={{ animationDelay: '0.4s' }}>
+              Our Story
+            </h1>
+
+            {/* Description */}
+            <p className="text-xl md:text-2xl text-white/95 max-w-3xl mx-auto font-light leading-relaxed drop-shadow-lg mb-8 animate-fadeInUp" style={{ animationDelay: '0.6s' }}>
+              A timeless legacy of royal elegance, where heritage meets modern luxury
+            </p>
+
+            {/* Decorative bottom */}
+            <div className="flex items-center justify-center gap-4 animate-fadeInUp" style={{ animationDelay: '0.8s' }}>
+              <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+              <div className="w-2 h-2 rounded-full bg-[#D4AF37]" />
+              <div className="w-24 h-[1px] bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+            </div>
+
+            {/* Scroll Indicator */}
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 animate-bounce" style={{ animationDelay: '1s' }}>
+              <div className="flex flex-col items-center gap-2 opacity-80">
+                <span className="text-white/60 text-xs uppercase tracking-widest">Discover More</span>
+                <div className="w-6 h-10 border-2 border-white/40 rounded-full flex justify-center pt-2">
+                  <div className="w-1 h-3 bg-[#D4AF37] rounded-full animate-pulse" />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Corner decorations */}
+        <div className="absolute top-8 left-8 w-24 h-24 border-l-2 border-t-2 border-[#D4AF37]/30" />
+        <div className="absolute bottom-8 right-8 w-24 h-24 border-r-2 border-b-2 border-[#D4AF37]/30" />
+      </section>
 
       {/* HERITAGE INTRO */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">

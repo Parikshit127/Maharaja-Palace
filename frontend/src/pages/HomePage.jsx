@@ -88,12 +88,12 @@ const ScrollExpandMedia = ({ mediaSrc, bgImageSrc, mediaType = 'image', title, s
           </motion.div>
           <div className="container mx-auto flex flex-col items-center justify-start relative z-10">
             <div className="flex flex-col items-center justify-center w-full h-screen relative">
-              <div 
-                className="absolute z-0 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-none overflow-hidden" 
-                style={{ 
-                  width: `${mediaWidth}px`, 
-                  height: `${mediaHeight}px`, 
-                  maxWidth: '100vw', 
+              <div
+                className="absolute z-0 top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 transition-none overflow-hidden"
+                style={{
+                  width: `${mediaWidth}px`,
+                  height: `${mediaHeight}px`,
+                  maxWidth: '100vw',
                   maxHeight: '100vh',
                   borderRadius: `${borderRadius}px`,
                   boxShadow: scrollProgress < 1 ? '0px 0px 80px rgba(184, 134, 11, 0.3), 0px 0px 120px rgba(0, 0, 0, 0.4)' : 'none'
@@ -113,10 +113,10 @@ const ScrollExpandMedia = ({ mediaSrc, bgImageSrc, mediaType = 'image', title, s
               <div className="flex items-center justify-center text-center gap-3 w-full relative z-10 transition-none flex-col mix-blend-difference">
                 <motion.p className="text-sm md:text-base uppercase tracking-[0.5em] text-white/90 font-light mb-2" initial={{ opacity: 0 }} animate={{ opacity: 1 - scrollProgress * 2.5 }}>Est. 2016 • Rohtak, Haryana</motion.p>
                 {/* Royal Italic Title - Maharaja */}
-                <motion.h1 
-                  className="text-5xl md:text-7xl lg:text-9xl text-white transition-none" 
-                  style={{ 
-                    transform: `translateX(-${textTranslateX}vw)`, 
+                <motion.h1
+                  className="text-5xl md:text-7xl lg:text-9xl text-white transition-none"
+                  style={{
+                    transform: `translateX(-${textTranslateX}vw)`,
                     textShadow: '0 4px 30px rgba(0,0,0,0.5)',
                     fontFamily: "'Playfair Display', 'Cormorant Garamond', Georgia, serif",
                     fontStyle: 'italic',
@@ -127,10 +127,10 @@ const ScrollExpandMedia = ({ mediaSrc, bgImageSrc, mediaType = 'image', title, s
                   {titleWords[0] || ''}
                 </motion.h1>
                 {/* Royal Italic Title - Palace */}
-                <motion.h1 
-                  className="text-5xl md:text-7xl lg:text-9xl text-white transition-none" 
-                  style={{ 
-                    transform: `translateX(${textTranslateX}vw)`, 
+                <motion.h1
+                  className="text-5xl md:text-7xl lg:text-9xl text-white transition-none"
+                  style={{
+                    transform: `translateX(${textTranslateX}vw)`,
                     textShadow: '0 4px 30px rgba(0,0,0,0.5)',
                     fontFamily: "'Playfair Display', 'Cormorant Garamond', Georgia, serif",
                     fontStyle: 'italic',
@@ -162,9 +162,9 @@ const ScrollExpandMedia = ({ mediaSrc, bgImageSrc, mediaType = 'image', title, s
 // ═══════════════════════════════════════════════════════════════════════════════
 const Button = ({ variant = 'filled', size = 'md', children, onClick, icon }) => {
   const baseStyles = "font-medium transition-all duration-500 tracking-wider uppercase inline-flex items-center justify-center gap-2 sm:gap-3 group";
-  const sizeStyles = { 
-    md: "px-5 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm", 
-    lg: "px-6 sm:px-10 py-3.5 sm:py-5 text-xs sm:text-base" 
+  const sizeStyles = {
+    md: "px-5 sm:px-8 py-3 sm:py-4 text-xs sm:text-sm",
+    lg: "px-6 sm:px-10 py-3.5 sm:py-5 text-xs sm:text-base"
   };
   const variantStyles = {
     filled: "bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-white hover:from-[#9a7209] hover:to-[#B8860B] shadow-xl hover:shadow-2xl hover:shadow-[#B8860B]/30",
@@ -187,7 +187,7 @@ const Button = ({ variant = 'filled', size = 'md', children, onClick, icon }) =>
 const LuxuryCard = ({ images, image, title, subtitle, description, onClick }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const imageList = images || [image];
-  
+
   useEffect(() => {
     if (imageList.length <= 1) return;
     const interval = setInterval(() => {
@@ -197,27 +197,26 @@ const LuxuryCard = ({ images, image, title, subtitle, description, onClick }) =>
   }, [imageList.length]);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 40 }} 
-      whileInView={{ opacity: 1, y: 0 }} 
-      transition={{ duration: 0.8 }} 
+    <motion.div
+      initial={{ opacity: 0, y: 40 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
       viewport={{ once: true }}
-      className="group cursor-pointer overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-700 relative rounded-xl" 
+      className="group cursor-pointer overflow-hidden bg-white shadow-lg hover:shadow-2xl transition-all duration-700 relative rounded-xl"
       onClick={onClick}
     >
       <div className="relative h-72 sm:h-80 overflow-hidden">
         {imageList.map((img, idx) => (
-          <img 
+          <img
             key={idx}
-            src={img} 
-            alt={`${title} ${idx + 1}`} 
-            className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${
-              idx === currentIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
-            } group-hover:scale-110`}
+            src={img}
+            alt={`${title} ${idx + 1}`}
+            className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${idx === currentIndex ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
+              } group-hover:scale-110`}
           />
         ))}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        
+
         {/* Image Indicators */}
         {imageList.length > 1 && (
           <div className="absolute bottom-20 left-1/2 -translate-x-1/2 flex gap-2 z-10">
@@ -225,14 +224,13 @@ const LuxuryCard = ({ images, image, title, subtitle, description, onClick }) =>
               <button
                 key={idx}
                 onClick={(e) => { e.stopPropagation(); setCurrentIndex(idx); }}
-                className={`h-1 rounded-full transition-all duration-300 ${
-                  idx === currentIndex ? 'bg-[#D4AF37] w-6' : 'bg-white/50 w-2'
-                }`}
+                className={`h-1 rounded-full transition-all duration-300 ${idx === currentIndex ? 'bg-[#D4AF37] w-6' : 'bg-white/50 w-2'
+                  }`}
               />
             ))}
           </div>
         )}
-        
+
         <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
           <p className="text-[#D4AF37] text-[10px] sm:text-xs uppercase tracking-[0.3em] mb-2">{subtitle}</p>
           <h3 className="text-xl sm:text-2xl font-serif text-white mb-2">{title}</h3>
@@ -264,20 +262,20 @@ const CountUp = ({ end, duration = 2000, suffix = '', decimals = 0 }) => {
           setHasAnimated(true);
           const startTime = Date.now();
           const endValue = parseFloat(end.toString().replace(/,/g, ''));
-          
+
           const animate = () => {
             const now = Date.now();
             const progress = Math.min((now - startTime) / duration, 1);
             // Easing function for smooth animation
             const easeOutQuart = 1 - Math.pow(1 - progress, 4);
             const currentValue = easeOutQuart * endValue;
-            
+
             if (decimals > 0) {
               setCount(currentValue.toFixed(decimals));
             } else {
               setCount(Math.floor(currentValue));
             }
-            
+
             if (progress < 1) {
               requestAnimationFrame(animate);
             } else {
@@ -285,7 +283,7 @@ const CountUp = ({ end, duration = 2000, suffix = '', decimals = 0 }) => {
               setCount(decimals > 0 ? endValue.toFixed(decimals) : endValue);
             }
           };
-          
+
           requestAnimationFrame(animate);
         }
       },
@@ -358,44 +356,44 @@ const PremiumAmenitiesReveal = () => {
   }, []);
 
   const amenitiesData = [
-    { 
+    {
       id: 0,
-      title: 'Royal Accommodations', 
+      title: 'Royal Accommodations',
       subtitle: 'Heritage Living',
       desc: 'Sumptuous suites adorned with heritage artefacts, handwoven textiles, and modern indulgences for the discerning traveler.',
       icon: <Bed className="w-8 h-8" />
     },
-    { 
+    {
       id: 1,
-      title: 'Grand Celebrations', 
+      title: 'Grand Celebrations',
       subtitle: 'Majestic Events',
       desc: 'Majestic venues for weddings, galas, and ceremonies that echo the splendor of royal courts.',
       icon: <PartyPopper className="w-8 h-8" />
     },
-    { 
+    {
       id: 2,
-      title: 'Culinary Excellence', 
+      title: 'Culinary Excellence',
       subtitle: 'Fine Dining',
       desc: 'Award-winning chefs crafting exquisite cuisines from royal Mughlai to contemporary global fare.',
       icon: <UtensilsCrossed className="w-8 h-8" />
     },
-    { 
+    {
       id: 3,
-      title: 'Executive Retreats', 
+      title: 'Executive Retreats',
       subtitle: 'Business & Conferences',
       desc: 'State-of-the-art conference halls designed for distinguished corporate gatherings.',
       icon: <Building2 className="w-8 h-8" />
     },
-    { 
+    {
       id: 4,
-      title: 'Wellness Sanctuary', 
+      title: 'Wellness Sanctuary',
       subtitle: 'Spa & Rejuvenation',
       desc: 'Ancient Ayurvedic therapies and modern spa treatments for complete rejuvenation of body and soul.',
       icon: <Sparkle className="w-8 h-8" />
     },
-    { 
+    {
       id: 5,
-      title: 'Cultural Immersion', 
+      title: 'Cultural Immersion',
       subtitle: 'Heritage Experiences',
       desc: 'Traditional performances, heritage walks, and curated experiences of Indian royalty.',
       icon: <Theater className="w-8 h-8" />
@@ -408,9 +406,9 @@ const PremiumAmenitiesReveal = () => {
       <section className="relative bg-[#0a0a0a] py-16 overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0">
-          <img 
-            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920" 
-            alt="Palace" 
+          <img
+            src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920"
+            alt="Palace"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
@@ -443,7 +441,7 @@ const PremiumAmenitiesReveal = () => {
               >
                 <div className="text-[#D4AF37] mb-4">{amenity.icon}</div>
                 <p className="text-[10px] uppercase tracking-[0.2em] text-[#D4AF37]/70 mb-2">{amenity.subtitle}</p>
-                <h3 
+                <h3
                   className="text-xl text-[#D4AF37] mb-3"
                   style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
                 >
@@ -463,9 +461,9 @@ const PremiumAmenitiesReveal = () => {
     <section className="relative min-h-[90vh] overflow-hidden">
       {/* Fixed Background Image */}
       <div className="absolute inset-0">
-        <motion.img 
-          src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920" 
-          alt="Palace" 
+        <motion.img
+          src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1920"
+          alt="Palace"
           className="w-full h-full object-cover"
           animate={{ scale: activePanel !== null ? 1.05 : 1 }}
           transition={{ duration: 0.8, ease: "easeOut" }}
@@ -481,7 +479,7 @@ const PremiumAmenitiesReveal = () => {
           <div className="w-12 h-[1px] bg-gradient-to-l from-transparent to-[#D4AF37]" />
         </div>
         <p className="text-xs uppercase tracking-[0.4em] text-[#D4AF37] mb-2">World-Class Offerings</p>
-        <h2 
+        <h2
           className="text-4xl lg:text-5xl text-white"
           style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
         >
@@ -520,7 +518,7 @@ const PremiumAmenitiesReveal = () => {
               {/* Icon - Always Visible */}
               <motion.div
                 className="text-[#D4AF37] mb-4"
-                animate={{ 
+                animate={{
                   scale: activePanel === index ? 1.2 : 1,
                   y: activePanel === index ? -20 : 0
                 }}
@@ -533,7 +531,7 @@ const PremiumAmenitiesReveal = () => {
               <motion.div
                 className="text-center max-w-[200px]"
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ 
+                animate={{
                   opacity: activePanel === index ? 1 : 0,
                   y: activePanel === index ? 0 : 20
                 }}
@@ -542,7 +540,7 @@ const PremiumAmenitiesReveal = () => {
                 <p className="text-[10px] uppercase tracking-[0.3em] text-[#D4AF37]/80 mb-2">
                   {amenity.subtitle}
                 </p>
-                <h3 
+                <h3
                   className="text-2xl lg:text-3xl text-[#D4AF37] mb-4 leading-tight"
                   style={{ fontFamily: "'Playfair Display', serif", fontStyle: 'italic' }}
                 >
@@ -595,10 +593,10 @@ const AccommodationSection = ({ navigate }) => {
     <section className="py-16 sm:py-24 md:py-32 bg-white overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
-          <motion.div 
-            initial={{ opacity: 0, x: -50 }} 
-            whileInView={{ opacity: 1, x: 0 }} 
-            transition={{ duration: 0.8 }} 
+          <motion.div
+            initial={{ opacity: 0, x: -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
             viewport={{ once: true }}
             className="order-2 lg:order-1"
           >
@@ -611,58 +609,56 @@ const AccommodationSection = ({ navigate }) => {
               Suites Worthy of<br /><span className="italic text-[#B8860B]">Maharajas</span>
             </h2>
             <p className="text-base sm:text-lg text-gray-700 leading-relaxed mb-4 sm:mb-6 font-light">
-              Every space at Maharaja Palace tells a story of tradition, craftsmanship, and comfort. From ornate arches and 
+              Every space at Maharaja Palace tells a story of tradition, craftsmanship, and comfort. From ornate arches and
               carved furnishings to rich fabrics and curated artefacts, the interiors exude the charm of a bygone era.
             </p>
             <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-6 sm:mb-8">
-              Complementing this royal ambience are modern conveniences—high-speed Wi-Fi, premium bedding, luxurious bathrooms, 
+              Complementing this royal ambience are modern conveniences—high-speed Wi-Fi, premium bedding, luxurious bathrooms,
               and personalized butler service.
             </p>
-            <Button variant="filled" size="lg" onClick={() => navigate('/rooms')} icon>View All Suites</Button>
+            <Button variant="filled" size="lg" onClick={() => { navigate('/rooms'); window.scrollTo(0, 0); }} icon>View All Suites</Button>
           </motion.div>
-          
-          <motion.div 
-            initial={{ opacity: 0, x: 50 }} 
-            whileInView={{ opacity: 1, x: 0 }} 
-            transition={{ duration: 0.8 }} 
-            viewport={{ once: true }} 
+
+          <motion.div
+            initial={{ opacity: 0, x: 50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
             className="relative order-1 lg:order-2"
           >
             {/* Main Image Slider */}
             <div className="relative h-[300px] sm:h-[400px] lg:h-[500px] rounded-2xl overflow-hidden shadow-2xl">
               {suiteImages.map((img, idx) => (
-                <img 
+                <img
                   key={idx}
-                  src={img.src} 
+                  src={img.src}
                   alt={img.title}
-                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${
-                    idx === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
-                  }`}
+                  className={`absolute inset-0 w-full h-full object-cover transition-all duration-1000 ${idx === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-110'
+                    }`}
                 />
               ))}
               <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-              
+
               {/* Slide Title */}
               <div className="absolute bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6">
                 <p className="text-white text-lg sm:text-xl font-serif">{suiteImages[currentSlide].title}</p>
               </div>
-              
+
               {/* Slide Indicators */}
               <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-6 flex gap-2">
                 {suiteImages.map((_, idx) => (
                   <button
                     key={idx}
                     onClick={() => setCurrentSlide(idx)}
-                    className={`h-1.5 rounded-full transition-all duration-300 ${
-                      idx === currentSlide ? 'bg-[#D4AF37] w-6' : 'bg-white/50 w-2'
-                    }`}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${idx === currentSlide ? 'bg-[#D4AF37] w-6' : 'bg-white/50 w-2'
+                      }`}
                   />
                 ))}
               </div>
             </div>
-            
+
             {/* Stats Badge */}
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
@@ -713,35 +709,35 @@ export function HomePage() {
 
   // Fixed experiences with multiple images for slider
   const experiences = [
-    { 
+    {
       images: [
         "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800",
         "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=800",
         "https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800"
       ],
-      title: "Royal Suites & Chambers", 
-      subtitle: "Accommodation", 
-      description: "From intimate heritage rooms to sprawling maharaja suites, each space tells a story of tradition, craftsmanship, and uncompromising comfort." 
+      title: "Royal Suites & Chambers",
+      subtitle: "Accommodation",
+      description: "From intimate heritage rooms to sprawling maharaja suites, each space tells a story of tradition, craftsmanship, and uncompromising comfort."
     },
-    { 
+    {
       images: [
         "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800",
         "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?w=800",
         "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800"
       ],
-      title: "Majestic Celebrations", 
-      subtitle: "Weddings & Events", 
-      description: "Choose from grand ballrooms, heritage courtyards, and palace gardens. Each venue transforms your special moments into legendary celebrations." 
+      title: "Majestic Celebrations",
+      subtitle: "Weddings & Events",
+      description: "Choose from grand ballrooms, heritage courtyards, and palace gardens. Each venue transforms your special moments into legendary celebrations."
     },
-    { 
+    {
       images: [
         "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=800",
         "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800",
         "https://images.unsplash.com/photo-1544148103-0773bf10d330?w=800"
       ],
-      title: "Culinary Excellence", 
-      subtitle: "Fine Dining", 
-      description: "Our master chefs present a symphony of flavors—from royal Awadhi cuisine to contemporary international gastronomy." 
+      title: "Culinary Excellence",
+      subtitle: "Fine Dining",
+      description: "Our master chefs present a symphony of flavors—from royal Awadhi cuisine to contemporary international gastronomy."
     }
   ];
 
@@ -756,7 +752,6 @@ export function HomePage() {
         bgImageSrc="https://maharajapalaces.com/wp-content/uploads/2025/09/WhatsApp-Image-2025-09-03-at-4.37.49-PM-2.jpeg"
         title="Maharaja Palace"
         subtitle="Where Heritage Embraces Grandeur • Since 2016"
-        scrollToExpand="Discover the Legacy"
       >
 
         {/* ═══════════════════════════════════════════════════════════════════════════════ */}
@@ -773,17 +768,17 @@ export function HomePage() {
             A Symphony of Regal Grandeur<br /><span className="text-[#B8860B] italic">& Timeless Elegance</span>
           </h2>
           <p className="text-xl text-gray-700 leading-relaxed mb-6 font-light max-w-4xl mx-auto">
-            Welcome to The Maharaja Palace — a world where regal grandeur, timeless elegance, and warm Indian hospitality 
-            converge to create an experience beyond imagination. Nestled in the heart of heritage, our palace stands as a 
+            Welcome to The Maharaja Palace — a world where regal grandeur, timeless elegance, and warm Indian hospitality
+            converge to create an experience beyond imagination. Nestled in the heart of heritage, our palace stands as a
             magnificent testament to royal architecture, cultural richness, and the art of refined living.
           </p>
           <p className="text-lg text-gray-600 leading-relaxed mb-12 max-w-3xl mx-auto">
-            Every corridor whispers tales of kings and queens. Every courtyard celebrates art and tradition. 
+            Every corridor whispers tales of kings and queens. Every courtyard celebrates art and tradition.
             Every chamber embodies grace, glory, and the promise of memories that last a lifetime.
           </p>
           <div className="flex flex-col sm:flex-row gap-5 justify-center">
-            <Button variant="filled" size="lg" onClick={() => navigate('/rooms')} icon>Reserve Your Royal Suite</Button>
-            <Button variant="outline" size="lg" onClick={() => navigate('/about')} icon>Discover Our Legacy</Button>
+            <Button variant="filled" size="lg" onClick={() => { navigate('/rooms'); window.scrollTo(0, 0); }} icon>Reserve Your Royal Suite</Button>
+            <Button variant="outline" size="lg" onClick={() => { navigate('/about'); window.scrollTo(0, 0); }} icon>Discover Our Legacy</Button>
           </div>
         </div>
 
@@ -816,7 +811,7 @@ export function HomePage() {
           <SectionHeader eyebrow="Curated for Royalty" title="Signature Experiences" subtitle="Immerse yourself in a world where every detail is crafted to perfection, every moment designed to create lasting memories of unparalleled luxury." />
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
             {experiences.map((exp, index) => (
-              <LuxuryCard key={index} {...exp} onClick={() => navigate(index === 0 ? '/rooms' : index === 1 ? '/banquet' : '/restaurant')} />
+              <LuxuryCard key={index} {...exp} onClick={() => { const path = index === 0 ? '/rooms' : index === 1 ? '/banquet' : '/restaurant'; navigate(path); window.scrollTo(0, 0); }} />
             ))}
           </div>
         </div>
@@ -840,7 +835,7 @@ export function HomePage() {
           <div className="absolute inset-0 bg-gradient-to-r from-black/85 via-black/70 to-black/50 sm:from-black/80 sm:via-black/60 sm:to-black/40" />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8 }}
@@ -856,12 +851,12 @@ export function HomePage() {
               Grand Banqueting<br /><span className="italic text-[#D4AF37]">& Majestic Events</span>
             </h2>
             <p className="text-sm sm:text-base lg:text-lg text-white/90 leading-relaxed mb-6 sm:mb-8 font-light">
-              Choose from majestic courtyards, grand ballrooms, and heritage-inspired banquet halls. Each space is designed with 
+              Choose from majestic courtyards, grand ballrooms, and heritage-inspired banquet halls. Each space is designed with
               regal architecture, intricate detailing, and luxurious interiors that echo the splendor of a bygone era.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
-              <Button variant="filled" size="lg" onClick={() => navigate('/banquet')} icon>Explore Venues</Button>
-              <Button variant="secondary" size="lg" onClick={() => navigate('/contact')} icon>Plan Your Event</Button>
+              <Button variant="filled" size="lg" onClick={() => { navigate('/banquet'); window.scrollTo(0, 0); }} icon>Explore Venues</Button>
+              <Button variant="secondary" size="lg" onClick={() => { navigate('/contact'); window.scrollTo(0, 0); }} icon>Plan Your Event</Button>
             </div>
           </motion.div>
         </div>
@@ -886,14 +881,14 @@ export function HomePage() {
               { img: 'https://images.unsplash.com/photo-1596436889106-be35e843f974?w=800', title: 'Marble Bath' },
               { img: 'https://images.unsplash.com/photo-1445019980597-93fa8acb246c?w=800', title: 'Pool View' }
             ].map((item, index) => (
-              <motion.div 
-                key={index} 
-                initial={{ opacity: 0, y: 30, scale: 0.95 }} 
-                whileInView={{ opacity: 1, y: 0, scale: 1 }} 
-                transition={{ delay: index * 0.15, duration: 0.7, ease: "easeOut" }} 
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 30, scale: 0.95 }}
+                whileInView={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ delay: index * 0.15, duration: 0.7, ease: "easeOut" }}
                 viewport={{ once: true }}
                 className="aspect-square overflow-hidden group cursor-pointer rounded-xl relative shadow-lg hover:shadow-2xl transition-all duration-500"
-                onClick={() => navigate('/gallery')}
+                onClick={() => { navigate('/gallery'); window.scrollTo(0, 0); }}
               >
                 <img src={item.img} alt={item.title} className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -907,7 +902,7 @@ export function HomePage() {
             ))}
           </div>
           <div className="text-center mt-8 sm:mt-12">
-            <Button variant="outline" size="lg" onClick={() => navigate('/gallery')} icon>Explore Full Gallery</Button>
+            <Button variant="outline" size="lg" onClick={() => { navigate('/gallery'); window.scrollTo(0, 0); }} icon>Explore Full Gallery</Button>
           </div>
         </div>
       </section>
@@ -949,7 +944,7 @@ export function HomePage() {
       <section className="py-10 sm:py-16 bg-[#1a1a1a]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 text-center sm:text-left">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
@@ -962,7 +957,7 @@ export function HomePage() {
                 <p className="text-white/60 text-xs sm:text-sm">45 mins from Delhi • 30 mins from Gurgaon</p>
               </div>
             </motion.div>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1, duration: 0.5 }}
@@ -975,7 +970,7 @@ export function HomePage() {
                 <p className="text-white/60 text-xs sm:text-sm">+91 1234 567 890 • 24/7 Concierge</p>
               </div>
             </motion.div>
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
@@ -1016,8 +1011,8 @@ export function HomePage() {
               Step into a world where every moment is extraordinary, every experience unforgettable, and every guest is treated like royalty.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-5 justify-center px-4">
-              <Button variant="filled" size="lg" onClick={() => navigate('/rooms')} icon>Reserve Your Suite</Button>
-              <Button variant="secondary" size="lg" onClick={() => navigate('/contact')} icon>Speak with Concierge</Button>
+              <Button variant="filled" size="lg" onClick={() => { navigate('/rooms'); window.scrollTo(0, 0); }} icon>Reserve Your Suite</Button>
+              <Button variant="secondary" size="lg" onClick={() => { navigate('/contact'); window.scrollTo(0, 0); }} icon>Speak with Concierge</Button>
             </div>
           </motion.div>
         </div>

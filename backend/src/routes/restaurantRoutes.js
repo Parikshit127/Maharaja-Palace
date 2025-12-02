@@ -12,6 +12,7 @@ import {
   searchRestaurantBookings,
   getAvailableTables,
   cancelRestaurantBooking,
+  updateRestaurantBookingPayment,
 } from "../controllers/restaurantController.js";
 import { protect, authorize } from "../middleware/auth.js";
 
@@ -26,6 +27,7 @@ router.get("/tables/available", getAvailableTables);
 router.post("/bookings", protect, createRestaurantBooking);
 router.get("/bookings/me", protect, getMyRestaurantBookings);
 router.put("/bookings/:id/cancel", protect, cancelRestaurantBooking);
+router.put("/bookings/:id/payment", protect, updateRestaurantBookingPayment);
 
 // Admin routes - Table management
 router.post("/tables", protect, authorize("admin"), createRestaurantTable);

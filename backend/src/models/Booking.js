@@ -41,6 +41,15 @@ const bookingSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    paidAmount: {
+      type: Number,
+      default: 0,
+    },
+    bookingType: {
+      type: String,
+      enum: ['full', 'partial'],
+      default: 'full',
+    },
     specialRequests: {
       type: String,
       default: '',

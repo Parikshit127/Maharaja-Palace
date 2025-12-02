@@ -4,7 +4,7 @@ import { logger } from '../utils/logger.js';
 // Guest - Create Booking
 export const createBooking = async (req, res, next) => {
   try {
-    const { room, checkInDate, checkOutDate, numberOfGuests, roomRate, specialRequests } = req.body;
+    const { room, checkInDate, checkOutDate, numberOfGuests, roomRate, specialRequests, bookingType = 'full' } = req.body;
 
     if (!room || !checkInDate || !checkOutDate || !numberOfGuests || !roomRate) {
       return res.status(400).json({
@@ -18,6 +18,9 @@ export const createBooking = async (req, res, next) => {
     const checkOut = new Date(checkOutDate);
     const numberOfNights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
     const totalPrice = numberOfNights * roomRate;
+
+    // Calculate paid amount based on booking type
+    const paidAmount = bookingType === 'partial' ? Math.round(totalPrice * 0.1) : totalPrice;
 
     if (numberOfNights <= 0) {
       return res.status(400).json({
@@ -35,6 +38,8 @@ export const createBooking = async (req, res, next) => {
       numberOfGuests,
       roomRate,
       totalPrice,
+      paidAmount,
+      bookingType,
       specialRequests,
       status: 'pending',
       paymentStatus: 'pending',
@@ -67,6 +72,54 @@ export const getMyBookings = async (req, res, next) => {
     });
   } catch (error) {
     logger.error(`Get my bookings error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Guest - Update Booking Payment
+export const updateBookingPayment = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { amount, paymentId } = req.body;
+
+    const booking = await Booking.findById(id);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found',
+      });
+    }
+
+    // Check if user is the booking owner
+    if (booking.guest.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'Not authorized to update this booking',
+      });
+    }
+
+    booking.paidAmount = (booking.paidAmount || 0) + Number(amount);
+    booking.transactionId = paymentId;
+
+    if (booking.paidAmount >= booking.totalPrice) {
+      booking.paymentStatus = 'completed';
+      booking.status = 'confirmed'; // Auto-confirm if fully paid
+    } else {
+      booking.paymentStatus = 'partial';
+    }
+
+    await booking.save();
+
+    logger.info(`Booking payment updated: ${booking.bookingNumber}, Amount: ${amount}`);
+
+    res.status(200).json({
+      success: true,
+      message: 'Payment updated successfully',
+      booking,
+    });
+  } catch (error) {
+    logger.error(`Update booking payment error: ${error.message}`);
     next(error);
   }
 };

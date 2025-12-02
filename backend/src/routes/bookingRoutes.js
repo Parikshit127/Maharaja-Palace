@@ -6,6 +6,7 @@ import {
   getBookingDetails,
   cancelBooking,
   updateBookingStatus,
+  updateBookingPayment,
   getUserBookings,
 } from "../controllers/bookingController.js";
 import { protect, authorize } from "../middleware/auth.js";
@@ -37,6 +38,7 @@ router.post(
 // Dynamic routes (MUST come AFTER specific routes)
 router.get("/:bookingId", protect, getBookingDetails);
 router.put("/:bookingId/cancel", protect, cancelBooking);
+router.put("/:id/payment", protect, updateBookingPayment);
 router.put(
   "/:bookingId/status",
   protect,

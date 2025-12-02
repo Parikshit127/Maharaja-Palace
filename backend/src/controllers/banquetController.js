@@ -124,10 +124,10 @@ export const createBanquetHall = async (req, res) => {
     const parsedCapacity = capacity
       ? JSON.parse(capacity)
       : {
-          theater: 0,
-          cocktail: 0,
-          banquet: 0,
-        };
+        theater: 0,
+        cocktail: 0,
+        banquet: 0,
+      };
 
     const hall = await BanquetHall.create({
       name,
@@ -312,6 +312,7 @@ export const createBanquetBooking = async (req, res) => {
       expectedGuests,
       setupType,
       specialRequirements,
+      bookingType = 'full'
     } = req.body;
 
     // Validate required fields
@@ -364,6 +365,10 @@ export const createBanquetBooking = async (req, res) => {
       });
     }
 
+    // Calculate paid amount
+    const totalPrice = hall.basePrice;
+    const paidAmount = bookingType === 'partial' ? Math.round(totalPrice * 0.1) : totalPrice;
+
     // Create booking
     const booking = await BanquetBooking.create({
       guest: req.user.id,
@@ -373,7 +378,9 @@ export const createBanquetBooking = async (req, res) => {
       expectedGuests,
       setupType,
       hallRate: hall.basePrice,
-      totalPrice: hall.basePrice,
+      totalPrice,
+      paidAmount,
+      bookingType,
       specialRequirements: specialRequirements || "",
       status: "pending",
       paymentStatus: "pending",
@@ -502,6 +509,58 @@ export const updateBanquetBookingStatus = async (req, res) => {
     res.status(500).json({
       success: false,
       message: "Failed to update booking status",
+    });
+  }
+};
+
+// ===========================
+// BOOKINGS - UPDATE PAYMENT (Guest)
+// ===========================
+export const updateBanquetBookingPayment = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { amount, paymentId } = req.body;
+
+    const booking = await BanquetBooking.findById(id);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Check if user is the booking owner
+    if (booking.guest.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to update this booking",
+      });
+    }
+
+    booking.paidAmount = (booking.paidAmount || 0) + Number(amount);
+
+    if (booking.paidAmount >= booking.totalPrice) {
+      booking.paymentStatus = "completed";
+      booking.status = "confirmed";
+    } else {
+      booking.paymentStatus = "partial";
+    }
+
+    await booking.save();
+
+    logger.info(`Banquet booking payment updated: ${booking.bookingNumber}, Amount: ${amount}`);
+
+    res.status(200).json({
+      success: true,
+      message: "Payment updated successfully",
+      booking,
+    });
+  } catch (err) {
+    logger.error(`Update banquet booking payment error: ${err.message}`);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update payment",
     });
   }
 };

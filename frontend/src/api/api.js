@@ -182,6 +182,7 @@ export const bookingAPI = {
   cancelBooking: (id) => api.put(`/bookings/${id}/cancel`),
   updateBookingStatus: (id, status) =>
     api.put(`/bookings/${id}/status`, { status }),
+  updatePayment: (id, data) => api.put(`/bookings/${id}/payment`, data),
   getUserBookings: (userId) => api.get(`/bookings/user/${userId}`),
   validateBooking: (roomId, checkIn, checkOut) =>
     roomAPI.checkRoomAvailability(roomId, checkIn, checkOut),
@@ -214,6 +215,7 @@ export const banquetAPI = {
   cancelBooking: (id) => api.put(`/banquet/bookings/${id}/cancel`),
   updateBookingStatus: (id, status) =>
     api.put(`/banquet/bookings/${id}/status`, { status }),
+  updatePayment: (id, data) => api.put(`/banquet/bookings/${id}/payment`, data),
 
   // Stats
   getStats: () => api.get("/banquet/stats"),
@@ -235,6 +237,7 @@ export const restaurantAPI = {
   cancelBooking: (id) => api.put(`/restaurant/bookings/${id}/cancel`),
   updateBookingStatus: (id, status) =>
     api.put(`/restaurant/bookings/${id}/status`, { status }),
+  updatePayment: (id, data) => api.put(`/restaurant/bookings/${id}/payment`, data),
 };
 
 export default api;

@@ -45,11 +45,11 @@ export const BookingPage = () => {
           checkOut: formData.checkOutDate,
           guests: formData.numberOfGuests,
         });
-        
+
         // Find first available room of this type
         const room = availableResponse.data.rooms.find(r => r.roomType._id === roomTypeId);
         setAvailableRoom(room);
-        
+
         setLoading(false);
       } catch (error) {
         console.error('Error fetching room data:', error);
@@ -69,6 +69,8 @@ export const BookingPage = () => {
     }
   }, [isAuthenticated, navigate, searchParams]);
 
+  const [bookingType, setBookingType] = useState('full');
+
   const calculateNights = () => {
     if (!formData.checkInDate || !formData.checkOutDate) return 0;
     const checkInDate = new Date(formData.checkInDate);
@@ -81,6 +83,11 @@ export const BookingPage = () => {
   const calculateServiceFee = () => Math.round(calculateSubtotal() * 0.1);
   const calculateTax = () => Math.round(calculateSubtotal() * 0.12); // 12% GST
   const calculateTotal = () => calculateSubtotal() + calculateServiceFee() + calculateTax();
+
+  const calculatePayableAmount = () => {
+    const total = calculateTotal();
+    return bookingType === 'partial' ? Math.round(total * 0.1) : total;
+  };
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -109,6 +116,7 @@ export const BookingPage = () => {
         numberOfGuests: formData.numberOfGuests,
         roomRate: roomRate,
         specialRequests: formData.specialRequests,
+        bookingType: bookingType,
       });
 
       const booking = bookingResponse.data.booking;
@@ -119,15 +127,17 @@ export const BookingPage = () => {
         throw new Error('Razorpay SDK failed to load');
       }
 
-      const totalAmount = calculateTotal();
+      const payableAmount = calculatePayableAmount();
+
+      console.log('Initializing Razorpay with key:', import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_RmTd6UtrZwwmTT');
 
       // Razorpay options
       const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_YOUR_KEY_HERE',
-        amount: totalAmount * 100,
+        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_RmTd6UtrZwwmTT',
+        amount: payableAmount * 100,
         currency: 'INR',
         name: 'Maharaja Palace',
-        description: `${roomType?.name} - ${calculateNights()} nights`,
+        description: `${roomType?.name} - ${bookingType === 'partial' ? 'Booking Amount' : 'Full Payment'}`,
         image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=200',
         handler: async function (response) {
           console.log('Payment successful:', response);
@@ -143,12 +153,13 @@ export const BookingPage = () => {
         notes: {
           booking_id: booking._id,
           room_type: roomType?.name,
+          booking_type: bookingType,
         },
         theme: {
           color: '#B8860B',
         },
         modal: {
-          ondismiss: function() {
+          ondismiss: function () {
             setPaymentProcessing(false);
             setError('Payment cancelled');
           }
@@ -166,7 +177,7 @@ export const BookingPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (calculateNights() <= 0) {
       setError('Check-out date must be after check-in date');
       return;
@@ -174,6 +185,8 @@ export const BookingPage = () => {
 
     await handlePayment();
   };
+
+  // ... (loading, error, success states remain same) ...
 
   if (!isAuthenticated) return null;
 
@@ -221,7 +234,7 @@ export const BookingPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#FBF9F4] py-16 px-6">
+    <div className="min-h-screen bg-[#FBF9F4] pt-32 pb-16 px-6">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
@@ -336,6 +349,42 @@ export const BookingPage = () => {
                 </div>
               </div>
 
+              {/* Payment Options */}
+              <div className="border-b border-[#B8860B]/20 pb-6">
+                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">Payment Options</h2>
+                <div className="space-y-4">
+                  <label className="flex items-center p-4 border-2 border-[#B8860B]/20 rounded-xl cursor-pointer hover:bg-[#B8860B]/5 transition-colors">
+                    <input
+                      type="radio"
+                      name="bookingType"
+                      value="full"
+                      checked={bookingType === 'full'}
+                      onChange={(e) => setBookingType(e.target.value)}
+                      className="w-5 h-5 text-[#B8860B] focus:ring-[#B8860B]"
+                    />
+                    <div className="ml-4">
+                      <span className="block font-semibold text-[#2a2a2a]">Pay Full Amount</span>
+                      <span className="block text-sm text-[#6a6a6a]">Pay the complete amount now</span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-center p-4 border-2 border-[#B8860B]/20 rounded-xl cursor-pointer hover:bg-[#B8860B]/5 transition-colors">
+                    <input
+                      type="radio"
+                      name="bookingType"
+                      value="partial"
+                      checked={bookingType === 'partial'}
+                      onChange={(e) => setBookingType(e.target.value)}
+                      className="w-5 h-5 text-[#B8860B] focus:ring-[#B8860B]"
+                    />
+                    <div className="ml-4">
+                      <span className="block font-semibold text-[#2a2a2a]">Pay Booking Amount (10%)</span>
+                      <span className="block text-sm text-[#6a6a6a]">Pay 10% now to confirm, remaining later</span>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
               {/* Special Requests */}
               <div>
                 <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">Special Requests (Optional)</h2>
@@ -361,7 +410,7 @@ export const BookingPage = () => {
           <div className="lg:col-span-1">
             <div className="sticky top-24 bg-white rounded-2xl shadow-xl border-2 border-[#B8860B]/20 p-8">
               <h2 className="text-2xl font-serif text-[#2a2a2a] mb-6">Price Summary</h2>
-              
+
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between text-[#6a6a6a]">
                   <span>₹{roomRate.toLocaleString()} × {calculateNights()} night{calculateNights() !== 1 ? 's' : ''}</span>
@@ -378,10 +427,30 @@ export const BookingPage = () => {
               </div>
 
               <div className="border-t-2 border-[#B8860B]/20 pt-4 mb-6">
-                <div className="flex justify-between items-center">
+                <div className="flex justify-between items-center mb-2">
                   <span className="text-xl font-bold text-[#2a2a2a]">Total</span>
-                  <span className="text-3xl font-bold text-[#B8860B]">₹{calculateTotal().toLocaleString()}</span>
+                  <span className="text-2xl font-bold text-[#2a2a2a]">₹{calculateTotal().toLocaleString()}</span>
                 </div>
+
+                {bookingType === 'partial' && (
+                  <>
+                    <div className="flex justify-between items-center text-[#B8860B] mt-2">
+                      <span className="font-semibold">Payable Now (10%)</span>
+                      <span className="font-bold">₹{calculatePayableAmount().toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[#6a6a6a] text-sm mt-1">
+                      <span>Due Later</span>
+                      <span>₹{(calculateTotal() - calculatePayableAmount()).toLocaleString()}</span>
+                    </div>
+                  </>
+                )}
+
+                {bookingType === 'full' && (
+                  <div className="flex justify-between items-center text-[#B8860B] mt-2">
+                    <span className="font-semibold">Payable Now</span>
+                    <span className="font-bold">₹{calculateTotal().toLocaleString()}</span>
+                  </div>
+                )}
               </div>
 
               <button
@@ -397,7 +466,7 @@ export const BookingPage = () => {
                 ) : (
                   <>
                     <CreditCard className="w-5 h-5" />
-                    Proceed to Payment
+                    Proceed to Pay ₹{calculatePayableAmount().toLocaleString()}
                   </>
                 )}
               </button>

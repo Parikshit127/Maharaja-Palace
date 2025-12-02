@@ -13,6 +13,7 @@ import {
   cancelBanquetBooking,
   updateBanquetBookingStatus,
   getBanquetDashboardStats,
+  updateBanquetBookingPayment,
 } from "../controllers/banquetController.js";
 
 const router = express.Router();
@@ -57,6 +58,9 @@ router.get("/bookings/me", protect, getMyBanquetBookings);
 
 // Guest - Cancel booking
 router.put("/bookings/:id/cancel", protect, cancelBanquetBooking);
+
+// Guest - Update payment
+router.put("/bookings/:id/payment", protect, updateBanquetBookingPayment);
 
 // Admin - Get all bookings
 router.get("/bookings", protect, authorize("admin"), getBanquetBookings);

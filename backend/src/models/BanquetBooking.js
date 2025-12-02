@@ -44,6 +44,15 @@ const banquetBookingSchema = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    paidAmount: {
+      type: Number,
+      default: 0,
+    },
+    bookingType: {
+      type: String,
+      enum: ['full', 'partial'],
+      default: 'full',
+    },
     specialRequirements: {
       type: String,
       default: "",

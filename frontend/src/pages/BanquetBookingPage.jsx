@@ -10,11 +10,11 @@ const BanquetBookingPage = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const hallId = searchParams.get('hallId');
-  
+
   const [halls, setHalls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     banquetHall: hallId || '',
     eventDate: '',
@@ -22,7 +22,8 @@ const BanquetBookingPage = () => {
     expectedGuests: 100,
     setupType: 'banquet',
     hallRate: 0,
-    specialRequirements: ''
+    specialRequirements: '',
+    bookingType: 'full'
   });
 
   const eventTypes = [
@@ -66,7 +67,7 @@ const BanquetBookingPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!formData.banquetHall || !formData.eventDate) {
       showToast('Please fill in all required fields', 'error');
       return;
@@ -193,11 +194,10 @@ const BanquetBookingPage = () => {
                           key={type.value}
                           type="button"
                           onClick={() => setFormData({ ...formData, eventType: type.value })}
-                          className={`p-4 border-2 rounded-lg transition-all ${
-                            formData.eventType === type.value
-                              ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-lg'
-                              : 'border-gray-200 hover:border-[#D4AF37]/50'
-                          }`}
+                          className={`p-4 border-2 rounded-lg transition-all ${formData.eventType === type.value
+                            ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-lg'
+                            : 'border-gray-200 hover:border-[#D4AF37]/50'
+                            }`}
                         >
                           <div className="text-3xl mb-2">{type.icon}</div>
                           <div className="text-sm font-semibold text-gray-800">{type.label}</div>
@@ -251,11 +251,10 @@ const BanquetBookingPage = () => {
                           key={setup.value}
                           type="button"
                           onClick={() => setFormData({ ...formData, setupType: setup.value })}
-                          className={`p-4 border-2 rounded-lg transition-all ${
-                            formData.setupType === setup.value
-                              ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-lg'
-                              : 'border-gray-200 hover:border-[#D4AF37]/50'
-                          }`}
+                          className={`p-4 border-2 rounded-lg transition-all ${formData.setupType === setup.value
+                            ? 'border-[#D4AF37] bg-[#D4AF37]/5 shadow-lg'
+                            : 'border-gray-200 hover:border-[#D4AF37]/50'
+                            }`}
                         >
                           <div className="text-3xl mb-2">{setup.icon}</div>
                           <div className="text-sm font-semibold text-gray-800">{setup.label}</div>
@@ -306,7 +305,7 @@ const BanquetBookingPage = () => {
           <div className="lg:col-span-1">
             <div className="bg-white rounded-2xl shadow-2xl p-8 sticky top-24">
               <h3 className="text-2xl font-serif text-[#0B1A33] mb-6">Booking Summary</h3>
-              
+
               <div className="space-y-4 mb-6">
                 {selectedHall && (
                   <div className="pb-4 border-b border-gray-200">
@@ -352,6 +351,35 @@ const BanquetBookingPage = () => {
               {/* Price Breakdown */}
               {formData.hallRate > 0 && (
                 <div className="bg-gradient-to-br from-[#FAF8F3] to-[#F5F1E8] rounded-lg p-6 space-y-3 mb-6">
+                  {/* Payment Option Selection */}
+                  <div className="mb-4 pb-4 border-b border-gray-200">
+                    <p className="text-sm font-semibold text-gray-700 mb-2">Payment Option</p>
+                    <div className="space-y-2">
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="bookingType"
+                          value="full"
+                          checked={formData.bookingType === 'full'}
+                          onChange={(e) => setFormData({ ...formData, bookingType: 'full' })}
+                          className="w-4 h-4 text-[#D4AF37] focus:ring-[#D4AF37]"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Full Payment</span>
+                      </label>
+                      <label className="flex items-center cursor-pointer">
+                        <input
+                          type="radio"
+                          name="bookingType"
+                          value="partial"
+                          checked={formData.bookingType === 'partial'}
+                          onChange={(e) => setFormData({ ...formData, bookingType: 'partial' })}
+                          className="w-4 h-4 text-[#D4AF37] focus:ring-[#D4AF37]"
+                        />
+                        <span className="ml-2 text-sm text-gray-700">Booking Amount (10%)</span>
+                      </label>
+                    </div>
+                  </div>
+
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Hall Rate</span>
                     <span className="font-semibold flex items-center">
@@ -373,12 +401,38 @@ const BanquetBookingPage = () => {
                       {gst.toLocaleString()}
                     </span>
                   </div>
-                  <div className="pt-3 border-t-2 border-[#D4AF37] flex justify-between">
-                    <span className="font-bold text-gray-800">Total Amount</span>
-                    <span className="font-bold text-2xl text-[#D4AF37] flex items-center">
-                      <IndianRupee className="w-5 h-5" />
-                      {totalPrice.toLocaleString()}
-                    </span>
+                  <div className="pt-3 border-t-2 border-[#D4AF37]">
+                    <div className="flex justify-between mb-2">
+                      <span className="font-bold text-gray-800">Total Amount</span>
+                      <span className="font-bold text-xl text-gray-800 flex items-center">
+                        <IndianRupee className="w-5 h-5" />
+                        {totalPrice.toLocaleString()}
+                      </span>
+                    </div>
+
+                    {formData.bookingType === 'partial' ? (
+                      <>
+                        <div className="flex justify-between text-[#D4AF37]">
+                          <span className="font-bold">Payable Now (10%)</span>
+                          <span className="font-bold text-2xl flex items-center">
+                            <IndianRupee className="w-5 h-5" />
+                            {Math.round(totalPrice * 0.1).toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm text-gray-500 mt-1">
+                          <span>Due Later</span>
+                          <span>₹{(totalPrice - Math.round(totalPrice * 0.1)).toLocaleString()}</span>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex justify-between text-[#D4AF37]">
+                        <span className="font-bold">Payable Now</span>
+                        <span className="font-bold text-2xl flex items-center">
+                          <IndianRupee className="w-5 h-5" />
+                          {totalPrice.toLocaleString()}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
