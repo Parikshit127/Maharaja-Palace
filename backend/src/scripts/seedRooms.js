@@ -27,7 +27,7 @@ const seedRooms = async () => {
         images: [
           { url: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200', alt: 'Khwabgah 1' },
           { url: 'https://images.unsplash.com/photo-1629140727571-9b5c6f6267b4?w=1200', alt: 'Khwabgah 2' },
-          { url: 'https://images.unsplash.com/photo-1631049552240-59c37f563fd5?w=1200', alt: 'Khwabgah 3' },
+          { url: 'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=1200', alt: 'Khwabgah 3' },
         ],
       },
       {

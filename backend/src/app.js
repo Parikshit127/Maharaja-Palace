@@ -2,7 +2,6 @@ import express from "express";
 import cors from "cors";
 import { config } from "./config/env.js";
 
-// Import routes
 import authRoutes from "./routes/authRoutes.js";
 import roomRoutes from "./routes/roomRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
@@ -10,15 +9,15 @@ import banquetRoutes from "./routes/banquetRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
 
 const app = express();
-
-// Middleware
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
       "http://localhost:3000",
       "http://localhost:5174",
-      "https://maharajapalace.vercel.app", 
+      "https://maharajapalace.vercel.app",
+      "https://maharaja-palace-mocha.vercel.app",
+      "https://maharaja-palace-btcy.onrender.com",
     ],
     credentials: true,
   })
@@ -27,13 +26,11 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Log all requests in development
 app.use((req, res, next) => {
   console.log(`📍 ${req.method} ${req.path}`);
   next();
 });
 
-// Health check route
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -51,7 +48,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// Test route - MUST BE BEFORE other /api/* routes
 app.get("/api/test", (req, res) => {
   res.json({
     success: true,

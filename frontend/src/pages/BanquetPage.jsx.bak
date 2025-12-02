@@ -28,7 +28,7 @@ export const BanquetPage = () => {
       console.log("🔍 Fetching halls from API...");
       
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/banquet/halls`
+        "http://localhost:5002/api/banquet/halls"
       );
 
       console.log("📦 API Response:", response.data);
