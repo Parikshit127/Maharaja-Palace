@@ -2,7 +2,8 @@ import axios from "axios";
 import { showToast } from "../utils/toast";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+  import.meta.env.VITE_API_URL ||
+  "https://maharaja-palace-xost.onrender.com/api";
 
 console.log("🔗 API Base URL:", API_BASE_URL);
 
@@ -237,7 +238,8 @@ export const restaurantAPI = {
   cancelBooking: (id) => api.put(`/restaurant/bookings/${id}/cancel`),
   updateBookingStatus: (id, status) =>
     api.put(`/restaurant/bookings/${id}/status`, { status }),
-  updatePayment: (id, data) => api.put(`/restaurant/bookings/${id}/payment`, data),
+  updatePayment: (id, data) =>
+    api.put(`/restaurant/bookings/${id}/payment`, data),
 };
 
 export default api;
