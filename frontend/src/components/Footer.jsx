@@ -1,4 +1,4 @@
-import React from 'react';
+import React from "react";
 
 export const Footer = () => {
   return (
@@ -12,16 +12,26 @@ export const Footer = () => {
               Maharaja Palace
             </h3>
             <p className="text-gray-400 text-sm leading-relaxed mb-4">
-              Experience unparalleled luxury and royal hospitality in the heart of grandeur.
+              Experience unparalleled luxury and royal hospitality in the heart
+              of grandeur.
             </p>
             <div className="flex space-x-3">
-              <a href="#" className="w-8 h-8 border border-[#B8860B] flex items-center justify-center hover:bg-[#B8860B] transition-colors text-xs">
+              <a
+                href="#"
+                className="w-8 h-8 border border-[#B8860B] flex items-center justify-center hover:bg-[#B8860B] transition-colors text-xs"
+              >
                 f
               </a>
-              <a href="#" className="w-8 h-8 border border-[#B8860B] flex items-center justify-center hover:bg-[#B8860B] transition-colors text-xs">
+              <a
+                href="#"
+                className="w-8 h-8 border border-[#B8860B] flex items-center justify-center hover:bg-[#B8860B] transition-colors text-xs"
+              >
                 in
               </a>
-              <a href="#" className="w-8 h-8 border border-[#B8860B] flex items-center justify-center hover:bg-[#B8860B] transition-colors text-xs">
+              <a
+                href="#"
+                className="w-8 h-8 border border-[#B8860B] flex items-center justify-center hover:bg-[#B8860B] transition-colors text-xs"
+              >
                 ig
               </a>
             </div>
@@ -34,27 +44,42 @@ export const Footer = () => {
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <a href="/" className="text-gray-400 hover:text-[#B8860B] transition-colors">
+                <a
+                  href="/"
+                  className="text-gray-400 hover:text-[#B8860B] transition-colors"
+                >
                   Home
                 </a>
               </li>
               <li>
-                <a href="/rooms" className="text-gray-400 hover:text-[#B8860B] transition-colors">
+                <a
+                  href="/rooms"
+                  className="text-gray-400 hover:text-[#B8860B] transition-colors"
+                >
                   Rooms
                 </a>
               </li>
               <li>
-                <a href="/banquet" className="text-gray-400 hover:text-[#B8860B] transition-colors">
+                <a
+                  href="/banquet"
+                  className="text-gray-400 hover:text-[#B8860B] transition-colors"
+                >
                   Banquet Halls
                 </a>
               </li>
               <li>
-                <a href="/restaurant" className="text-gray-400 hover:text-[#B8860B] transition-colors">
+                <a
+                  href="/restaurant"
+                  className="text-gray-400 hover:text-[#B8860B] transition-colors"
+                >
                   Dining
                 </a>
               </li>
               <li>
-                <a href="/gallery" className="text-gray-400 hover:text-[#B8860B] transition-colors">
+                <a
+                  href="/gallery"
+                  className="text-gray-400 hover:text-[#B8860B] transition-colors"
+                >
                   Gallery
                 </a>
               </li>
@@ -83,15 +108,18 @@ export const Footer = () => {
             <ul className="space-y-3 text-sm text-gray-400">
               <li className="flex items-start">
                 <span className="text-[#B8860B] mr-2">📍</span>
-                <span>123 Royal Avenue, Ludhiana, Punjab</span>
+                <span>
+                  Near, sai mandir NH9, Kharawar, Haryana 124021, Rohtak, India,
+                  Haryana
+                </span>
               </li>
               <li className="flex items-center">
                 <span className="text-[#B8860B] mr-2">📞</span>
-                <span>+91 98765 43210</span>
+                <span>090530 88819</span>
               </li>
               <li className="flex items-center">
                 <span className="text-[#B8860B] mr-2">✉️</span>
-                <span>info@maharajapalace.com</span>
+                <span>reservations@maharajapalaces.com</span>
               </li>
             </ul>
           </div>

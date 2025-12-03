@@ -1,6 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { HeroSection, SectionTitle, Button } from '../components/BaseComponents';
-import { MapPin, Phone, Mail, Send, CheckCircle, Hotel, UtensilsCrossed, PartyPopper, Camera, ChevronDown } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import {
+  HeroSection,
+  SectionTitle,
+  Button,
+} from "../components/BaseComponents";
+import {
+  MapPin,
+  Phone,
+  Mail,
+  Send,
+  CheckCircle,
+  Hotel,
+  UtensilsCrossed,
+  PartyPopper,
+  Camera,
+  ChevronDown,
+} from "lucide-react";
 
 // Animated Card
 const AnimatedCard = ({ children, delay = 0 }) => {
@@ -29,9 +44,11 @@ const AnimatedCard = ({ children, delay = 0 }) => {
   }, [delay]);
 
   return (
-    <div 
+    <div
       ref={ref}
-      className={`transition-all duration-700 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}
+      className={`transition-all duration-700 ${
+        isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-10"
+      }`}
     >
       {children}
     </div>
@@ -41,14 +58,16 @@ const AnimatedCard = ({ children, delay = 0 }) => {
 // Enhanced Input
 const EnhancedInput = ({ label, error, ...props }) => {
   const [isFocused, setIsFocused] = useState(false);
-  
+
   return (
     <div className="relative">
-      <label className={`absolute left-4 transition-all duration-300 pointer-events-none ${
-        isFocused || props.value 
-          ? '-top-2 text-xs bg-white px-2 text-[#B8860B]' 
-          : 'top-4 text-gray-500'
-      }`}>
+      <label
+        className={`absolute left-4 transition-all duration-300 pointer-events-none ${
+          isFocused || props.value
+            ? "-top-2 text-xs bg-white px-2 text-[#B8860B]"
+            : "top-4 text-gray-500"
+        }`}
+      >
         {label}
       </label>
       <input
@@ -56,11 +75,11 @@ const EnhancedInput = ({ label, error, ...props }) => {
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         className={`w-full px-4 py-4 border-2 transition-all duration-300 outline-none ${
-          error 
-            ? 'border-red-500' 
-            : isFocused 
-              ? 'border-[#B8860B] shadow-lg shadow-[#B8860B]/10' 
-              : 'border-gray-200 hover:border-gray-300'
+          error
+            ? "border-red-500"
+            : isFocused
+            ? "border-[#B8860B] shadow-lg shadow-[#B8860B]/10"
+            : "border-gray-200 hover:border-gray-300"
         }`}
       />
       {error && (
@@ -76,7 +95,7 @@ const EnhancedInput = ({ label, error, ...props }) => {
 // FAQ Item
 const FAQItem = ({ question, answer, index }) => {
   const [isOpen, setIsOpen] = useState(false);
-  
+
   return (
     <AnimatedCard delay={index * 100}>
       <div className="bg-white border-l-4 border-[#B8860B] overflow-hidden transition-all duration-300 hover:shadow-lg">
@@ -87,16 +106,18 @@ const FAQItem = ({ question, answer, index }) => {
           <h4 className="text-lg font-semibold text-gray-800 group-hover:text-[#B8860B] transition-colors duration-300">
             {question}
           </h4>
-          <ChevronDown className={`w-5 h-5 text-[#B8860B] transition-transform duration-300 flex-shrink-0 ${
-            isOpen ? 'rotate-180' : ''
-          }`} />
+          <ChevronDown
+            className={`w-5 h-5 text-[#B8860B] transition-transform duration-300 flex-shrink-0 ${
+              isOpen ? "rotate-180" : ""
+            }`}
+          />
         </button>
-        <div className={`transition-all duration-300 overflow-hidden ${
-          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-        }`}>
-          <p className="px-6 pb-6 text-gray-600 leading-relaxed">
-            {answer}
-          </p>
+        <div
+          className={`transition-all duration-300 overflow-hidden ${
+            isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
+        >
+          <p className="px-6 pb-6 text-gray-600 leading-relaxed">{answer}</p>
         </div>
       </div>
     </AnimatedCard>
@@ -105,11 +126,11 @@ const FAQItem = ({ question, answer, index }) => {
 
 export const ContactPage = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    subject: '',
-    message: ''
+    name: "",
+    email: "",
+    phone: "",
+    subject: "",
+    message: "",
   });
   const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
@@ -117,28 +138,28 @@ export const ContactPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
+      [name]: value,
     }));
     if (errors[name]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: ''
+        [name]: "",
       }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
-    if (!formData.name) newErrors.name = 'Name is required';
-    if (!formData.email) newErrors.email = 'Email is required';
+    if (!formData.name) newErrors.name = "Name is required";
+    if (!formData.email) newErrors.email = "Email is required";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
+      newErrors.email = "Invalid email format";
     }
-    if (!formData.phone) newErrors.phone = 'Phone is required';
-    if (!formData.subject) newErrors.subject = 'Subject is required';
-    if (!formData.message) newErrors.message = 'Message is required';
+    if (!formData.phone) newErrors.phone = "Phone is required";
+    if (!formData.subject) newErrors.subject = "Subject is required";
+    if (!formData.message) newErrors.message = "Message is required";
     return newErrors;
   };
 
@@ -148,59 +169,72 @@ export const ContactPage = () => {
       setErrors(newErrors);
       return;
     }
-    
+
     setIsSubmitting(true);
     setTimeout(() => {
-      console.log('Form submitted:', formData);
+      console.log("Form submitted:", formData);
       setSubmitted(true);
       setIsSubmitting(false);
-      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
+      setFormData({ name: "", email: "", phone: "", subject: "", message: "" });
       setTimeout(() => setSubmitted(false), 5000);
     }, 1500);
   };
-
   const contactCards = [
     {
       icon: MapPin,
-      title: 'Visit Us',
-      details: ['123 Royal Avenue', 'Palace District', 'Ludhiana, Punjab 141001', 'India']
+      title: "Visit Us",
+      details: [
+        "Maharaja Palace",
+        "near, sai mandir NH9",
+        "Kharawar, Haryana 124021",
+        "Rohtak, India",
+      ],
     },
     {
       icon: Phone,
-      title: 'Call Us',
-      details: ['Reservations: +91 98765 43210', 'General Inquiries: +91 98765 43211', 'Events: +91 98765 43212', 'Available 24/7']
+      title: "Call Us",
+      details: [
+        "Reservations: 090530 88819",
+        "General Inquiries: 090530 88819",
+        "Events: 090530 88819",
+        "Available 24/7",
+      ],
     },
     {
       icon: Mail,
-      title: 'Email Us',
-      details: ['General: info@maharajapalace.com', 'Reservations: bookings@maharajapalace.com', 'Events: events@maharajapalace.com', 'Careers: careers@maharajapalace.com']
-    }
+      title: "Email Us",
+      details: [
+        "General: reservations@maharajapalace.com",
+        "Reservations: reservations@maharajapalace.com",
+        "Events: events@maharajapalace.com",
+      ],
+    },
   ];
 
   const quickLinks = [
-    { title: 'Book a Room', icon: Hotel, link: '/rooms' },
-    { title: 'Reserve a Table', icon: UtensilsCrossed, link: '/restaurant' },
-    { title: 'Event Inquiry', icon: PartyPopper, link: '/banquet' },
-    { title: 'View Gallery', icon: Camera, link: '/gallery' }
+    { title: "Book a Room", icon: Hotel, link: "/rooms" },
+    { title: "Reserve a Table", icon: UtensilsCrossed, link: "/restaurant" },
+    { title: "Event Inquiry", icon: PartyPopper, link: "/banquet" },
+    { title: "View Gallery", icon: Camera, link: "/gallery" },
   ];
 
   const faqs = [
     {
-      q: 'What are your check-in and check-out times?',
-      a: 'Check-in time is 2:00 PM and check-out time is 12:00 PM. Early check-in and late check-out are subject to availability and may incur additional charges.'
+      q: "What are your check-in and check-out times?",
+      a: "Check-in time is 2:00 PM and check-out time is 12:00 PM. Early check-in and late check-out are subject to availability and may incur additional charges.",
     },
     {
-      q: 'Do you offer airport transfer services?',
-      a: 'Yes, we provide complimentary airport transfers for our suite and penthouse guests. Other guests can arrange airport pickup at a nominal fee.'
+      q: "Do you offer airport transfer services?",
+      a: "Yes, we provide complimentary airport transfers for our suite and penthouse guests. Other guests can arrange airport pickup at a nominal fee.",
     },
     {
-      q: 'Is parking available at the hotel?',
-      a: 'Yes, we offer complimentary valet parking for all our guests with 24/7 security.'
+      q: "Is parking available at the hotel?",
+      a: "Yes, we offer complimentary valet parking for all our guests with 24/7 security.",
     },
     {
-      q: 'What is your cancellation policy?',
-      a: 'Cancellations made 72 hours prior to arrival are eligible for a full refund. Cancellations within 72 hours will incur a one-night charge.'
-    }
+      q: "What is your cancellation policy?",
+      a: "Cancellations made 72 hours prior to arrival are eligible for a full refund. Cancellations within 72 hours will incur a one-night charge.",
+    },
   ];
 
   return (
@@ -238,11 +272,16 @@ export const ContactPage = () => {
                     <div className="w-20 h-20 bg-[#B8860B]/10 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:bg-[#B8860B] transition-all duration-500">
                       <Icon className="w-10 h-10 text-[#B8860B] group-hover:text-white transition-colors duration-500" />
                     </div>
-                    <h3 className="text-2xl font-serif text-[#B8860B] mb-6">{contact.title}</h3>
+                    <h3 className="text-2xl font-serif text-[#B8860B] mb-6">
+                      {contact.title}
+                    </h3>
                     <div className="w-16 h-[1px] bg-[#B8860B]/30 mx-auto mb-6 group-hover:w-full transition-all duration-500"></div>
                     <div className="space-y-2">
                       {contact.details.map((detail, idx) => (
-                        <p key={idx} className="text-gray-600 text-sm leading-relaxed">
+                        <p
+                          key={idx}
+                          className="text-gray-600 text-sm leading-relaxed"
+                        >
                           {detail}
                         </p>
                       ))}
@@ -259,7 +298,7 @@ export const ContactPage = () => {
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-white via-[#faf9f6] to-white"></div>
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-[#B8860B] to-transparent"></div>
-        
+
         <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <SectionTitle subtitle="We'd love to hear from you">
             Send Us a Message
@@ -272,8 +311,12 @@ export const ContactPage = () => {
                 <div className="relative flex items-center justify-center gap-4 text-green-700">
                   <CheckCircle className="w-8 h-8" />
                   <div>
-                    <p className="text-xl font-semibold">Thank you for contacting us!</p>
-                    <p className="mt-1 text-sm">We'll get back to you within 24 hours.</p>
+                    <p className="text-xl font-semibold">
+                      Thank you for contacting us!
+                    </p>
+                    <p className="mt-1 text-sm">
+                      We'll get back to you within 24 hours.
+                    </p>
                   </div>
                 </div>
               </div>
@@ -312,9 +355,13 @@ export const ContactPage = () => {
                     error={errors.phone}
                   />
                   <div className="relative">
-                    <label className={`absolute left-4 transition-all duration-300 pointer-events-none ${
-                      formData.subject ? '-top-2 text-xs bg-white px-2 text-[#B8860B]' : 'top-4 text-gray-500'
-                    }`}>
+                    <label
+                      className={`absolute left-4 transition-all duration-300 pointer-events-none ${
+                        formData.subject
+                          ? "-top-2 text-xs bg-white px-2 text-[#B8860B]"
+                          : "top-4 text-gray-500"
+                      }`}
+                    >
                       Subject
                     </label>
                     <select
@@ -322,7 +369,9 @@ export const ContactPage = () => {
                       value={formData.subject}
                       onChange={handleChange}
                       className={`w-full px-4 py-4 border-2 transition-all duration-300 outline-none appearance-none ${
-                        errors.subject ? 'border-red-500' : 'border-gray-200 hover:border-gray-300 focus:border-[#B8860B] focus:shadow-lg focus:shadow-[#B8860B]/10'
+                        errors.subject
+                          ? "border-red-500"
+                          : "border-gray-200 hover:border-gray-300 focus:border-[#B8860B] focus:shadow-lg focus:shadow-[#B8860B]/10"
                       }`}
                     >
                       <option value=""></option>
@@ -343,9 +392,13 @@ export const ContactPage = () => {
                 </div>
 
                 <div className="relative">
-                  <label className={`absolute left-4 transition-all duration-300 pointer-events-none ${
-                    formData.message ? '-top-2 text-xs bg-white px-2 text-[#B8860B]' : 'top-4 text-gray-500'
-                  }`}>
+                  <label
+                    className={`absolute left-4 transition-all duration-300 pointer-events-none ${
+                      formData.message
+                        ? "-top-2 text-xs bg-white px-2 text-[#B8860B]"
+                        : "top-4 text-gray-500"
+                    }`}
+                  >
                     Message
                   </label>
                   <textarea
@@ -354,7 +407,9 @@ export const ContactPage = () => {
                     onChange={handleChange}
                     rows={6}
                     className={`w-full px-4 py-4 pt-6 border-2 transition-all duration-300 outline-none resize-none ${
-                      errors.message ? 'border-red-500' : 'border-gray-200 hover:border-gray-300 focus:border-[#B8860B] focus:shadow-lg focus:shadow-[#B8860B]/10'
+                      errors.message
+                        ? "border-red-500"
+                        : "border-gray-200 hover:border-gray-300 focus:border-[#B8860B] focus:shadow-lg focus:shadow-[#B8860B]/10"
                     }`}
                   />
                   {errors.message && (
@@ -399,7 +454,7 @@ export const ContactPage = () => {
           src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3423.0123456789!2d75.8573!3d30.9010!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMzDCsDU0JzAzLjYiTiA3NcKwNTEnMjYuMyJF!5e0!3m2!1sen!2sin!4v1234567890"
           width="100%"
           height="100%"
-          style={{ border: 0, filter: 'grayscale(0.3)' }}
+          style={{ border: 0, filter: "grayscale(0.3)" }}
           allowFullScreen
           loading="lazy"
           referrerPolicy="no-referrer-when-downgrade"
@@ -420,7 +475,7 @@ export const ContactPage = () => {
               return (
                 <AnimatedCard key={index} delay={index * 100}>
                   <button
-                    onClick={() => window.location.href = item.link}
+                    onClick={() => (window.location.href = item.link)}
                     className="group relative w-full p-10 bg-[#faf9f6] border-2 border-transparent hover:border-[#B8860B] transition-all duration-500 overflow-hidden hover:shadow-xl"
                   >
                     <div className="absolute inset-0 bg-white translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
@@ -449,7 +504,12 @@ export const ContactPage = () => {
 
         <div className="space-y-4 mt-16">
           {faqs.map((faq, index) => (
-            <FAQItem key={index} question={faq.q} answer={faq.a} index={index} />
+            <FAQItem
+              key={index}
+              question={faq.q}
+              answer={faq.a}
+              index={index}
+            />
           ))}
         </div>
       </section>
