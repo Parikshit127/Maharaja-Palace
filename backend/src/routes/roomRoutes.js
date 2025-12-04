@@ -13,12 +13,18 @@ import {
   getRoomById,
   checkRoomAvailability,
   getAvailableRoomTypes,
+  uploadRoomImage,
+  debugGetAllRooms,
 } from "../controllers/roomController.js";
 import { protect, authorize } from "../middleware/auth.js";
+import { upload } from "../middleware/upload.js";
 
 const router = express.Router();
 
 // ⚠️ IMPORTANT: Specific routes MUST come BEFORE dynamic routes like /:id
+
+// Image upload route (must come first)
+router.post("/upload-image", protect, authorize("admin"), upload.single("image"), uploadRoomImage);
 
 // Room Types routes (must come first)
 router.get("/room-types", getAllRoomTypes);
@@ -30,6 +36,7 @@ router.delete("/room-types/:id", protect, authorize("admin"), deleteRoomType);
 router.get("/available", getAvailableRooms);
 router.get("/available-types", getAvailableRoomTypes);
 router.get("/check-availability", checkRoomAvailability);
+router.get("/debug/all", debugGetAllRooms); // DEBUG route
 
 // Admin room management routes
 router.post("/", protect, authorize("admin"), createRoom);

@@ -65,6 +65,44 @@ const restaurantBookingSchema = new mongoose.Schema(
     transactionId: {
       type: String
     },
+    refundStatus: {
+      type: String,
+      enum: ["none", "requested", "approved", "rejected", "processed"],
+      default: "none",
+    },
+    refundAmount: {
+      type: Number,
+      default: 0,
+    },
+    refundId: {
+      type: String,
+      default: null,
+    },
+    refundReason: {
+      type: String,
+      default: null,
+    },
+    refundRequestedAt: {
+      type: Date,
+      default: null,
+    },
+    refundApprovedAt: {
+      type: Date,
+      default: null,
+    },
+    refundProcessedAt: {
+      type: Date,
+      default: null,
+    },
+    refundRejectionReason: {
+      type: String,
+      default: null,
+    },
+    refundProcessedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      default: null,
+    },
   },
   {
     timestamps: true,

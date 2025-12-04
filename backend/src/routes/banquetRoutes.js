@@ -14,6 +14,10 @@ import {
   updateBanquetBookingStatus,
   getBanquetDashboardStats,
   updateBanquetBookingPayment,
+  markBanquetBookingAsPaid,
+  requestBanquetRefund,
+  updateBanquetRefundStatus,
+  getBanquetRefundStatus,
 } from "../controllers/banquetController.js";
 
 const router = express.Router();
@@ -61,6 +65,19 @@ router.put("/bookings/:id/cancel", protect, cancelBanquetBooking);
 
 // Guest - Update payment
 router.put("/bookings/:id/payment", protect, updateBanquetBookingPayment);
+
+// Dev helper - Mark as paid
+router.put("/bookings/:id/mark-paid", protect, markBanquetBookingAsPaid);
+
+// Refund routes
+router.post("/bookings/:bookingId/refund/request", protect, requestBanquetRefund);
+router.put(
+  "/bookings/:bookingId/refund/status",
+  protect,
+  authorize("admin"),
+  updateBanquetRefundStatus
+);
+router.get("/bookings/:bookingId/refund/status", protect, getBanquetRefundStatus);
 
 // Admin - Get all bookings
 router.get("/bookings", protect, authorize("admin"), getBanquetBookings);

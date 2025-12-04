@@ -8,6 +8,10 @@ import {
   updateBookingStatus,
   updateBookingPayment,
   getUserBookings,
+  requestRefund,
+  updateRefundStatus,
+  getRefundStatus,
+  markBookingAsPaid,
 } from "../controllers/bookingController.js";
 import { protect, authorize } from "../middleware/auth.js";
 import {
@@ -34,6 +38,19 @@ router.post(
   validateRoomAvailability, // Step 2: Validate room is available for dates
   createBooking // Step 3: Create the booking
 );
+
+// Dev helper: Mark booking as paid without going through gateway
+router.put("/:bookingId/mark-paid", protect, markBookingAsPaid);
+
+// Refund routes
+router.post("/:bookingId/refund/request", protect, requestRefund);
+router.put(
+  "/:bookingId/refund/status",
+  protect,
+  authorize("admin"),
+  updateRefundStatus
+);
+router.get("/:bookingId/refund/status", protect, getRefundStatus);
 
 // Dynamic routes (MUST come AFTER specific routes)
 router.get("/:bookingId", protect, getBookingDetails);

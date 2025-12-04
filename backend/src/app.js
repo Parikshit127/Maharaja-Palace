@@ -9,6 +9,7 @@ import roomRoutes from "./routes/roomRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
 import banquetRoutes from "./routes/banquetRoutes.js";
 import restaurantRoutes from "./routes/restaurantRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 const app = express();
 
@@ -83,6 +84,7 @@ app.use("/api/rooms", roomRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/banquet", banquetRoutes);
 app.use("/api/restaurant", restaurantRoutes);
+app.use("/api/payments", paymentRoutes);
 
 // API info route
 app.get("/api", (req, res) => {

@@ -2,6 +2,37 @@ import Room from "../models/Room.js";
 import RoomType from "../models/RoomType.js";
 import Booking from "../models/Booking.js"; // Make sure you have this model
 import { logger } from "../utils/logger.js";
+import { cloudinary } from "../middleware/upload.js";
+
+// Upload Room Image
+export const uploadRoomImage = async (req, res, next) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "Please upload an image file",
+      });
+    }
+
+    // File is already uploaded to Cloudinary by multer middleware
+    const imageUrl = req.file.path;
+    const publicId = req.file.filename;
+
+    logger.info(`Image uploaded to Cloudinary: ${publicId}`);
+
+    res.status(200).json({
+      success: true,
+      message: "Image uploaded successfully",
+      image: {
+        url: imageUrl,
+        publicId: publicId,
+      },
+    });
+  } catch (error) {
+    logger.error(`Upload image error: ${error.message}`);
+    next(error);
+  }
+};
 
 // Admin - Create Room Type
 export const createRoomType = async (req, res, next) => {
@@ -67,41 +98,78 @@ export const getAllRoomTypes = async (req, res, next) => {
 // Admin - Create Room
 export const createRoom = async (req, res, next) => {
   try {
-    const { roomNumber, roomType, floor, currentPrice } = req.body;
+    logger.info('📝 CREATE ROOM REQUEST RECEIVED');
+    logger.info('Request body:', JSON.stringify(req.body, null, 2));
+    
+    const { roomNumber, roomType, floor, currentPrice, status } = req.body;
 
     if (!roomNumber || !roomType || !floor || !currentPrice) {
+      logger.error('❌ Missing required fields');
       return res.status(400).json({
         success: false,
         message: "Please provide all required fields",
       });
     }
 
+    logger.info(`✓ Validation passed for room ${roomNumber}`);
+
     // Check if room type exists
     const type = await RoomType.findById(roomType);
     if (!type) {
+      logger.error(`❌ Room type not found: ${roomType}`);
       return res.status(404).json({
         success: false,
         message: "Room type not found",
       });
     }
 
+    logger.info(`✓ Room type found: ${type.name}`);
+
+    // Ensure status is set to available if not provided
+    const roomStatus = status || "available";
+
+    logger.info(`Creating room with data:`, {
+      roomNumber,
+      roomType: type.name,
+      floor,
+      status: roomStatus,
+      currentPrice,
+      isActive: true
+    });
+
     const room = await Room.create({
       roomNumber,
       roomType,
       floor,
-      status: "available",
+      status: roomStatus,
       currentPrice,
+      isActive: true, // Explicitly set isActive to true
     });
 
-    logger.info(`Room created: ${roomNumber}`);
+    logger.info(`✅ Room created successfully: ${roomNumber} (ID: ${room._id})`);
+
+    const populatedRoom = await room.populate("roomType");
+
+    logger.info(`✅ Room populated and ready to return`);
 
     res.status(201).json({
       success: true,
       message: "Room created successfully",
-      room: await room.populate("roomType"),
+      room: populatedRoom,
     });
   } catch (error) {
-    logger.error(`Create room error: ${error.message}`);
+    logger.error(`❌ Create room error: ${error.message}`);
+    logger.error(`Error stack: ${error.stack}`);
+    
+    // Check for duplicate key error
+    if (error.code === 11000) {
+      logger.error(`Duplicate room number: ${req.body.roomNumber}`);
+      return res.status(400).json({
+        success: false,
+        message: `Room number ${req.body.roomNumber} already exists`,
+      });
+    }
+    
     next(error);
   }
 };
@@ -162,6 +230,13 @@ export const getAvailableRooms = async (req, res, next) => {
       isActive: true,
     }).populate("roomType");
 
+    logger.info(`📊 Total active rooms in database: ${allRooms.length}`);
+    
+    // Log room details for debugging
+    allRooms.forEach(room => {
+      logger.info(`  Room ${room.roomNumber}: status=${room.status}, isActive=${room.isActive}, type=${room.roomType?.name}`);
+    });
+
     // Find all bookings that overlap with the requested dates
     const overlappingBookings = await Booking.find({
       status: { $in: ["confirmed", "pending"] },
@@ -173,10 +248,14 @@ export const getAvailableRooms = async (req, res, next) => {
       ],
     }).select("room");
 
+    logger.info(`📅 Overlapping bookings found: ${overlappingBookings.length}`);
+
     // Get IDs of booked rooms
     const bookedRoomIds = overlappingBookings.map((booking) =>
       booking.room.toString()
     );
+
+    logger.info(`🔒 Booked room IDs: ${bookedRoomIds.join(', ') || 'none'}`);
 
     // Filter out booked rooms and check occupancy
     const availableRooms = allRooms.filter((room) => {
@@ -184,8 +263,12 @@ export const getAvailableRooms = async (req, res, next) => {
       const hasCapacity = room.roomType.maxOccupancy >= parseInt(guests);
       const isAvailable = room.status === "available";
 
+      logger.info(`  Room ${room.roomNumber}: notBooked=${isNotBooked}, hasCapacity=${hasCapacity}, statusAvailable=${isAvailable}`);
+
       return isNotBooked && hasCapacity && isAvailable;
     });
+
+    logger.info(`✅ Available rooms after filtering: ${availableRooms.length}`);
 
     res.status(200).json({
       success: true,
@@ -536,6 +619,38 @@ export const deleteRoom = async (req, res, next) => {
     });
   } catch (error) {
     logger.error(`Delete room error: ${error.message}`);
+    next(error);
+  }
+};
+
+// DEBUG - Get all rooms with full details (for troubleshooting)
+export const debugGetAllRooms = async (req, res, next) => {
+  try {
+    const allRooms = await Room.find({}).populate("roomType");
+    
+    const roomDetails = allRooms.map(room => ({
+      id: room._id,
+      roomNumber: room.roomNumber,
+      roomType: room.roomType?.name,
+      floor: room.floor,
+      status: room.status,
+      isActive: room.isActive,
+      currentPrice: room.currentPrice,
+      createdAt: room.createdAt
+    }));
+
+    logger.info(`🔍 DEBUG: Total rooms in database: ${allRooms.length}`);
+    roomDetails.forEach(room => {
+      logger.info(`  Room ${room.roomNumber}: status=${room.status}, isActive=${room.isActive}, type=${room.roomType}`);
+    });
+
+    res.status(200).json({
+      success: true,
+      count: allRooms.length,
+      rooms: roomDetails
+    });
+  } catch (error) {
+    logger.error(`Debug get all rooms error: ${error.message}`);
     next(error);
   }
 };

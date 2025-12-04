@@ -13,6 +13,10 @@ import {
   getAvailableTables,
   cancelRestaurantBooking,
   updateRestaurantBookingPayment,
+  markRestaurantBookingAsPaid,
+  requestRestaurantRefund,
+  updateRestaurantRefundStatus,
+  getRestaurantRefundStatus,
 } from "../controllers/restaurantController.js";
 import { protect, authorize } from "../middleware/auth.js";
 
@@ -28,6 +32,17 @@ router.post("/bookings", protect, createRestaurantBooking);
 router.get("/bookings/me", protect, getMyRestaurantBookings);
 router.put("/bookings/:id/cancel", protect, cancelRestaurantBooking);
 router.put("/bookings/:id/payment", protect, updateRestaurantBookingPayment);
+router.put("/bookings/:id/mark-paid", protect, markRestaurantBookingAsPaid);
+
+// Refund routes
+router.post("/bookings/:bookingId/refund/request", protect, requestRestaurantRefund);
+router.put(
+  "/bookings/:bookingId/refund/status",
+  protect,
+  authorize("admin", "manager"),
+  updateRestaurantRefundStatus
+);
+router.get("/bookings/:bookingId/refund/status", protect, getRestaurantRefundStatus);
 
 // Admin routes - Table management
 router.post("/tables", protect, authorize("admin"), createRestaurantTable);

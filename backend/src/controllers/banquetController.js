@@ -424,7 +424,7 @@ export const cancelBanquetBooking = async (req, res) => {
     }
 
     // Check if user owns the booking
-    if (booking.guest.toString() !== req.user.id && req.user.role !== "admin") {
+    if (booking.guest.toString() !== req.user._id.toString() && req.user.role !== "admin") {
       return res.status(403).json({
         success: false,
         message: "Not authorized to cancel this booking",
@@ -531,7 +531,7 @@ export const updateBanquetBookingPayment = async (req, res) => {
     }
 
     // Check if user is the booking owner
-    if (booking.guest.toString() !== req.user.id) {
+    if (booking.guest.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: "Not authorized to update this booking",
@@ -562,5 +562,295 @@ export const updateBanquetBookingPayment = async (req, res) => {
       success: false,
       message: "Failed to update payment",
     });
+  }
+};
+
+// Dev helper: mark booking as paid without payment gateway
+export const markBanquetBookingAsPaid = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (process.env.NODE_ENV === "production") {
+      return res.status(403).json({
+        success: false,
+        message: "Mark-as-paid is disabled in production",
+      });
+    }
+
+    const booking = await BanquetBooking.findById(id).populate("guest");
+
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found" });
+    }
+
+    // Only allow owner or admin to mark paid
+    if (
+      booking.guest._id.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to mark this booking as paid",
+      });
+    }
+
+    booking.paidAmount = booking.totalPrice;
+    booking.transactionId = `dev_test_${Date.now()}`;
+    booking.paymentStatus = "completed";
+    booking.status = "confirmed";
+
+    await booking.save();
+
+    logger.info(
+      `Banquet booking marked as paid (dev): ${booking.bookingNumber} by ${req.user.id}`
+    );
+
+    res
+      .status(200)
+      .json({ success: true, message: "Booking marked as paid", booking });
+  } catch (error) {
+    logger.error(`Mark banquet booking paid error: ${error.message}`);
+    next(error);
+  }
+};
+
+// ===========================
+// REFUNDS
+// ===========================
+
+// Guest - Request Refund
+export const requestBanquetRefund = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { reason } = req.body;
+
+    const booking = await BanquetBooking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Verify user owns the booking
+    if (booking.guest.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to refund this booking",
+      });
+    }
+
+    // Check if payment is completed
+    if (booking.paymentStatus !== "completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Can only refund completed payments",
+      });
+    }
+
+    // Check if refund already exists
+    if (
+      booking.refundStatus === "requested" ||
+      booking.refundStatus === "processed"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Refund already requested for this booking",
+      });
+    }
+
+    // Update booking with refund request
+    booking.refundStatus = "requested";
+    booking.refundAmount = booking.paidAmount;
+    booking.refundReason = reason || "No reason provided";
+    booking.refundRequestedAt = new Date();
+
+    await booking.save();
+
+    logger.info(`Refund requested for banquet booking: ${booking.bookingNumber}`);
+
+    res.status(200).json({
+      success: true,
+      message: "Refund request submitted successfully",
+      booking,
+    });
+  } catch (error) {
+    logger.error(`Request banquet refund error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: "Error submitting refund request",
+    });
+  }
+};
+
+// Admin - Approve/Reject Refund
+export const updateBanquetRefundStatus = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+    const { action, reason } = req.body; // action: 'approve' or 'reject'
+
+    if (!["approve", "reject"].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid action. Must be approve or reject",
+      });
+    }
+
+    const booking = await BanquetBooking.findById(bookingId).populate([
+      "guest",
+      "banquetHall",
+    ]);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    if (booking.refundStatus !== "requested") {
+      return res.status(400).json({
+        success: false,
+        message: "Refund must be in requested status",
+      });
+    }
+
+    if (action === "reject") {
+      booking.refundStatus = "rejected";
+      booking.refundRejectionReason = reason || "Refund request denied by admin";
+      booking.refundProcessedBy = req.user._id;
+      await booking.save();
+
+      logger.info(`Refund rejected for banquet booking: ${booking.bookingNumber}`);
+
+      return res.status(200).json({
+        success: true,
+        message: "Refund request rejected",
+        booking,
+      });
+    }
+
+    // Approve refund - will be processed after 12 hours
+    if (action === "approve") {
+      booking.refundStatus = "approved";
+      booking.refundApprovedAt = new Date();
+      booking.refundProcessedBy = req.user._id;
+      
+      await booking.save();
+
+      logger.info(
+        `Refund approved for banquet booking: ${booking.bookingNumber}. Will process in 12 hours.`
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Refund approved. Payment will be processed in 12 hours.",
+        booking,
+        processingTime: "12 hours",
+      });
+    }
+  } catch (error) {
+    logger.error(`Update banquet refund status error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: "Error updating refund status",
+    });
+  }
+};
+
+// Guest - Get Refund Status
+export const getBanquetRefundStatus = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    const booking = await BanquetBooking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    if (booking.guest.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view this booking",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      refundStatus: booking.refundStatus,
+      refundAmount: booking.refundAmount,
+      refundReason: booking.refundReason,
+      refundRequestedAt: booking.refundRequestedAt,
+      refundProcessedAt: booking.refundProcessedAt,
+      refundId: booking.refundId,
+    });
+  } catch (error) {
+    logger.error(`Get banquet refund status error: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: "Error fetching refund status",
+    });
+  }
+};
+
+// Cron job helper: Process scheduled refunds (approved > 12 hours ago)
+export const processScheduledBanquetRefunds = async () => {
+  try {
+    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    
+    // Find bookings approved for refund more than 12 hours ago but not yet processed
+    const bookingsToRefund = await BanquetBooking.find({
+      refundStatus: "approved",
+      refundApprovedAt: { $lte: twelveHoursAgo },
+    });
+
+    if (bookingsToRefund.length > 0) {
+      logger.info(`Found ${bookingsToRefund.length} banquet bookings to process for refund`);
+    }
+
+    for (const booking of bookingsToRefund) {
+      try {
+        // Process actual refund via Razorpay
+        // Note: Assuming refundPayment service is imported
+        const { refundPayment } = await import("../services/paymentService.js");
+        
+        const refundResult = await refundPayment(
+          booking.transactionId,
+          booking.paidAmount
+        );
+
+        if (refundResult.success) {
+          // Update booking with refund details
+          booking.refundStatus = "processed";
+          booking.refundId = refundResult.refundId;
+          booking.refundProcessedAt = new Date();
+          booking.paymentStatus = "refunded";
+          booking.status = "cancelled"; // Auto-cancel on full refund
+
+          await booking.save();
+
+          logger.info(
+            `Auto-processed refund for banquet booking: ${booking.bookingNumber} - Refund ID: ${refundResult.refundId}`
+          );
+        } else {
+          logger.error(
+            `Failed to auto-process refund for ${booking.bookingNumber}: ${refundResult.error}`
+          );
+        }
+      } catch (err) {
+        logger.error(
+          `Error processing refund for ${booking.bookingNumber}: ${err.message}`
+        );
+      }
+    }
+  } catch (error) {
+    logger.error(`Process scheduled banquet refunds error: ${error.message}`);
   }
 };

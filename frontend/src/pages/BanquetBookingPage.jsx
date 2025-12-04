@@ -4,6 +4,7 @@ import { banquetAPI } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { Calendar, Users, Sparkles, Check, ArrowLeft, IndianRupee } from 'lucide-react';
 import { showToast } from '../utils/toast';
+import { CustomPaymentModal } from '../components/CustomPaymentModal';
 
 const BanquetBookingPage = () => {
   const navigate = useNavigate();
@@ -14,6 +15,8 @@ const BanquetBookingPage = () => {
   const [halls, setHalls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentBooking, setCurrentBooking] = useState(null);
 
   const [formData, setFormData] = useState({
     banquetHall: hallId || '',
@@ -75,13 +78,31 @@ const BanquetBookingPage = () => {
 
     setSubmitting(true);
     try {
-      await banquetAPI.createBooking(formData);
-      showToast('Banquet booking created successfully!', 'success');
-      setTimeout(() => navigate('/dashboard'), 1500);
+      const response = await banquetAPI.createBooking(formData);
+      setCurrentBooking(response.data.booking);
+      setShowPaymentModal(true);
     } catch (error) {
       console.error('Booking error:', error);
+      showToast(error.response?.data?.message || 'Failed to create booking', 'error');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleTestPaymentComplete = async () => {
+    try {
+      const markResp = await banquetAPI.markAsPaid(currentBooking._id);
+      if (markResp?.data?.success) {
+        setShowPaymentModal(false);
+        showToast('Payment successful! Booking confirmed.', 'success');
+        setTimeout(() => navigate('/dashboard'), 1500);
+      } else {
+        throw new Error(markResp?.data?.message || 'Failed to mark booking as paid');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      showToast('Payment failed', 'error');
+      setShowPaymentModal(false);
     }
   };
 
@@ -455,7 +476,25 @@ const BanquetBookingPage = () => {
           </div>
         </div>
       </div>
+
+      <CustomPaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        amount={
+          formData.bookingType === 'partial'
+            ? Math.round(totalPrice * 0.1)
+            : totalPrice
+        }
+        bookingDetails={{
+          bookingNumber: currentBooking?.bookingNumber,
+          roomType: selectedHall?.name,
+          checkIn: formData.eventDate,
+          checkOut: formData.eventDate,
+        }}
+        onTestComplete={handleTestPaymentComplete}
+      />
     </div>
+
   );
 };
 

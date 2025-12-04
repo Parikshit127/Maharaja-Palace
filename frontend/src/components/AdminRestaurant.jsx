@@ -3,7 +3,12 @@ import { restaurantAPI } from '../api/api';
 import { Plus, Edit, Trash2, Loader, Save } from 'lucide-react';
 import { showToast } from '../utils/toast';
 
-export const AdminRestaurant = () => {
+const months = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
+];
+
+export const AdminRestaurant = ({ selectedMonth, setSelectedMonth }) => {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -122,15 +127,39 @@ export const AdminRestaurant = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-serif text-[#2a2a2a]">Restaurant Table Management</h2>
-        <button
-          onClick={handleCreateTable}
-          className="flex items-center gap-2 px-4 py-2 bg-[#B8860B] text-white rounded-lg hover:bg-[#8B6914] transition-colors"
-        >
-          <Plus className="w-4 h-4" />
-          Add New Table
-        </button>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h2 className="text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-[#B8860B] to-[#D4AF37] mb-2">Restaurant Table Management</h2>
+          <p className="text-[#6a6a6a]">{tables.length} tables available</p>
+        </div>
+        <div className="flex items-center gap-4">
+          {/* Month Filter */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-semibold text-[#2a2a2a]">Month:</label>
+            <select
+              value={selectedMonth === null ? "" : selectedMonth}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedMonth(val === "" ? null : parseInt(val));
+              }}
+              className="px-4 py-2 border-2 border-[#B8860B]/30 rounded-xl bg-white font-semibold text-[#2a2a2a] focus:outline-none focus:border-[#B8860B] transition"
+            >
+              <option value="">All Months</option>
+              {months.map((m, i) => (
+                <option key={i} value={i}>
+                  {m}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={handleCreateTable}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-white rounded-xl hover:shadow-lg hover:shadow-[#B8860B]/30 transition-all duration-300 font-semibold"
+          >
+            <Plus className="w-4 h-4" />
+            Add New Table
+          </button>
+        </div>
       </div>
 
       {showForm && (

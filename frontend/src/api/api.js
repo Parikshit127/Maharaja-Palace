@@ -171,6 +171,15 @@ export const roomAPI = {
     api.get("/rooms/check-availability", {
       params: { roomId, checkIn, checkOut },
     }),
+
+  // Image Upload
+  uploadImage: (formData) => {
+    return api.post("/rooms/upload-image", formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
 };
 
 // Booking APIs
@@ -184,9 +193,18 @@ export const bookingAPI = {
   updateBookingStatus: (id, status) =>
     api.put(`/bookings/${id}/status`, { status }),
   updatePayment: (id, data) => api.put(`/bookings/${id}/payment`, data),
+  // Dev helper: mark booking as paid without gateway
+  markAsPaid: (id) => api.put(`/bookings/${id}/mark-paid`),
   getUserBookings: (userId) => api.get(`/bookings/user/${userId}`),
   validateBooking: (roomId, checkIn, checkOut) =>
     roomAPI.checkRoomAvailability(roomId, checkIn, checkOut),
+  // Refund APIs
+  requestRefund: (bookingId, data) =>
+    api.post(`/bookings/${bookingId}/refund/request`, data),
+  getRefundStatus: (bookingId) =>
+    api.get(`/bookings/${bookingId}/refund/status`),
+  updateRefundStatus: (bookingId, data) =>
+    api.put(`/bookings/${bookingId}/refund/status`, data),
 };
 
 // Banquet APIs
@@ -217,6 +235,16 @@ export const banquetAPI = {
   updateBookingStatus: (id, status) =>
     api.put(`/banquet/bookings/${id}/status`, { status }),
   updatePayment: (id, data) => api.put(`/banquet/bookings/${id}/payment`, data),
+  // Dev helper: mark booking as paid without gateway
+  markAsPaid: (id) => api.put(`/banquet/bookings/${id}/mark-paid`),
+
+  // Refund APIs
+  requestRefund: (bookingId, data) =>
+    api.post(`/banquet/bookings/${bookingId}/refund/request`, data),
+  getRefundStatus: (bookingId) =>
+    api.get(`/banquet/bookings/${bookingId}/refund/status`),
+  updateRefundStatus: (bookingId, data) =>
+    api.put(`/banquet/bookings/${bookingId}/refund/status`, data),
 
   // Stats
   getStats: () => api.get("/banquet/stats"),
@@ -240,6 +268,24 @@ export const restaurantAPI = {
     api.put(`/restaurant/bookings/${id}/status`, { status }),
   updatePayment: (id, data) =>
     api.put(`/restaurant/bookings/${id}/payment`, data),
+  // Dev helper: mark booking as paid without gateway
+  markAsPaid: (id) => api.put(`/restaurant/bookings/${id}/mark-paid`),
+
+  // Refund APIs
+  requestRefund: (bookingId, data) =>
+    api.post(`/restaurant/bookings/${bookingId}/refund/request`, data),
+  getRefundStatus: (bookingId) =>
+    api.get(`/restaurant/bookings/${bookingId}/refund/status`),
+  updateRefundStatus: (bookingId, data) =>
+    api.put(`/restaurant/bookings/${bookingId}/refund/status`, data),
 };
 
+// Payment APIs
+export const paymentAPI = {
+  createOrder: (data) => api.post("/payments/order", data),
+  verifyPayment: (data) => api.post("/payments/verify", data),
+  initiateRefund: (bookingId, data) =>
+    api.post(`/payments/${bookingId}/refund`, data),
+  getPaymentDetails: (paymentId) => api.get(`/payments/${paymentId}`),
+};
 export default api;

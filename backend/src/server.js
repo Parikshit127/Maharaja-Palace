@@ -12,13 +12,17 @@ dotenv.config();
 const gracefulShutdown = (signal, server) => {
   logger.info(`${signal} received. Shutting down gracefully...`);
 
-  server.close(() => {
+  server.close(async () => {
     logger.info("HTTP server closed");
 
-    mongoose.connection.close(false, () => {
+    try {
+      await mongoose.connection.close(false);
       logger.info("MongoDB connection closed");
       process.exit(0);
-    });
+    } catch (err) {
+      logger.error("Error closing MongoDB connection", err);
+      process.exit(1);
+    }
   });
 
   // Force shutdown after 10 seconds

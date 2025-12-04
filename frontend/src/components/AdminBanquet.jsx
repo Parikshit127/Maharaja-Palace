@@ -13,7 +13,13 @@ import {
   DollarSign,
 } from "lucide-react";
 
-export const AdminBanquet = () => {
+const months = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
+];
+
+
+export const AdminBanquet = ({ selectedMonth, setSelectedMonth }) => {
   const [halls, setHalls] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -169,7 +175,7 @@ export const AdminBanquet = () => {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
           <h2 className="text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-[#B8860B] to-[#D4AF37] mb-2">
             Banquet Halls Management

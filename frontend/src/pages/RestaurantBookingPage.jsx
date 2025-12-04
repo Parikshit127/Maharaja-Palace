@@ -4,6 +4,7 @@ import { restaurantAPI } from '../api/api';
 import { useAuth } from '../context/AuthContext';
 import { Calendar, Clock, Users, ChefHat, Check, ArrowLeft } from 'lucide-react';
 import { showToast } from '../utils/toast';
+import { CustomPaymentModal } from '../components/CustomPaymentModal';
 
 const RestaurantBookingPage = () => {
   const navigate = useNavigate();
@@ -11,6 +12,8 @@ const RestaurantBookingPage = () => {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentBooking, setCurrentBooking] = useState(null);
 
   const [formData, setFormData] = useState({
     table: '',
@@ -56,16 +59,6 @@ const RestaurantBookingPage = () => {
     return total;
   };
 
-  const loadRazorpayScript = () => {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      script.onload = () => resolve(true);
-      script.onerror = () => resolve(false);
-      document.body.appendChild(script);
-    });
-  };
-
   const handlePayment = async (e) => {
     e.preventDefault();
 
@@ -77,61 +70,44 @@ const RestaurantBookingPage = () => {
     setSubmitting(true);
 
     try {
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        showToast('Razorpay SDK failed to load', 'error');
-        setSubmitting(false);
-        return;
-      }
-
       const payableAmount = calculatePayableAmount();
       const pricePerGuest = 500;
       const totalAmount = formData.numberOfGuests * pricePerGuest;
 
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_RmTd6UtrZwwmTT',
-        amount: payableAmount * 100,
-        currency: 'INR',
-        name: 'Maharaja Palace',
-        description: bookingType === 'partial'
-          ? `Partial Payment (10%) for Restaurant Booking`
-          : `Full Payment for Restaurant Booking`,
-        image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=200',
-        handler: async function (response) {
-          try {
-            await restaurantAPI.createBooking({
-              ...formData,
-              bookingType,
-              paymentId: response.razorpay_payment_id,
-              paidAmount: payableAmount,
-              totalPrice: totalAmount
-            });
-            showToast('Restaurant booking confirmed!', 'success');
-            setTimeout(() => navigate('/dashboard'), 1500);
-          } catch (error) {
-            console.error('Booking creation failed:', error);
-            showToast(error.response?.data?.message || 'Booking failed', 'error');
-          }
-        },
-        prefill: {
-          name: `${user?.firstName} ${user?.lastName}`,
-          email: user?.email,
-          contact: user?.phone || '',
-        },
-        theme: {
-          color: '#D4AF37',
-        },
-      };
+      const response = await restaurantAPI.createBooking({
+        ...formData,
+        bookingType,
+        paidAmount: payableAmount,
+        totalPrice: totalAmount
+      });
 
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
+      setCurrentBooking(response.data.booking);
+      setShowPaymentModal(true);
     } catch (error) {
-      console.error('Payment initialization failed:', error);
-      showToast('Failed to initialize payment', 'error');
+      console.error('Booking creation failed:', error);
+      showToast(error.response?.data?.message || 'Booking failed', 'error');
     } finally {
       setSubmitting(false);
     }
   };
+
+  const handleTestPaymentComplete = async () => {
+    try {
+      const markResp = await restaurantAPI.markAsPaid(currentBooking._id);
+      if (markResp?.data?.success) {
+        setShowPaymentModal(false);
+        showToast('Restaurant booking confirmed!', 'success');
+        setTimeout(() => navigate('/dashboard'), 1500);
+      } else {
+        throw new Error(markResp?.data?.message || 'Failed to mark booking as paid');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      showToast('Payment failed', 'error');
+      setShowPaymentModal(false);
+    }
+  };
+
 
   const selectedTable = tables.find(t => t._id === formData.table);
   const pricePerGuest = 500;
@@ -471,7 +447,22 @@ const RestaurantBookingPage = () => {
           </div>
         </div>
       </div>
+
+
+      <CustomPaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        amount={calculatePayableAmount()}
+        bookingDetails={{
+          bookingNumber: currentBooking?.bookingNumber,
+          roomType: `Table ${selectedTable?.tableNumber}`,
+          checkIn: formData.bookingDate,
+          checkOut: formData.bookingDate,
+        }}
+        onTestComplete={handleTestPaymentComplete}
+      />
     </div>
+
   );
 };
 

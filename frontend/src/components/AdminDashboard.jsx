@@ -6,10 +6,32 @@ import {
   restaurantAPI,
   roomAPI,
 } from "../api/api";
-import { Loader, Users, Calendar, TrendingUp, Percent, ArrowRight, Activity } from "lucide-react";
+import {
+  Loader,
+  Users,
+  Calendar,
+  TrendingUp,
+  Percent,
+  ArrowRight,
+} from "lucide-react";
 import { showToast } from "../utils/toast";
 
-export const AdminDashboard = ({ setActiveTab }) => {
+/* ---------------------------------------------
+   MONTHS ARRAY FOR SELECTION
+---------------------------------------------- */
+const months = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
+];
+
+export const AdminDashboard = ({
+  setActiveTab,
+  selectedMonth,
+  setSelectedMonth,
+}) => {
+  /* ---------------------------------------------
+      EXISTING STATES
+  ---------------------------------------------- */
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeBookings: 0,
@@ -20,6 +42,54 @@ export const AdminDashboard = ({ setActiveTab }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  /* ---------------------------------------------
+      NEW: booking arrays for month filtering
+  ---------------------------------------------- */
+  const [allRoomBookings, setAllRoomBookings] = useState([]);
+  const [allBanquetBookings, setAllBanquetBookings] = useState([]);
+  const [allRestaurantBookings, setAllRestaurantBookings] = useState([]);
+
+  const [monthlyData, setMonthlyData] = useState({
+    revenue: 0,
+    bookings: [],
+  });
+
+  const [isMonthMode, setIsMonthMode] = useState(false);
+
+  /* ---------------------------------------------
+      MONTH FILTER HELPERS
+  ---------------------------------------------- */
+  const getMonthIndex = (date) => {
+    const d = new Date(date);
+    return d.getMonth();
+  };
+
+  const handleMonthClick = (monthIndex) => {
+    setSelectedMonth(monthIndex);
+    setIsMonthMode(true);
+
+    const room = allRoomBookings.filter(
+      (b) => getMonthIndex(b.createdAt) === monthIndex
+    );
+    const banquet = allBanquetBookings.filter(
+      (b) => getMonthIndex(b.createdAt) === monthIndex
+    );
+    const restaurant = allRestaurantBookings.filter(
+      (b) => getMonthIndex(b.createdAt) === monthIndex
+    );
+
+    const merged = [...room, ...banquet, ...restaurant];
+    const revenue = merged.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
+
+    setMonthlyData({
+      revenue,
+      bookings: merged,
+    });
+  };
+
+  /* ---------------------------------------------
+      LOAD DASHBOARD STATS
+  ---------------------------------------------- */
   useEffect(() => {
     loadDashboardStats();
   }, []);
@@ -49,20 +119,14 @@ export const AdminDashboard = ({ setActiveTab }) => {
       const banquetBookings = banquetBookingsRes.data.bookings || [];
       const restaurantBookings = restaurantBookingsRes.data.bookings || [];
 
-      const activeRoomBookings = roomBookings.filter(
-        (b) => !["cancelled", "checked-out"].includes(b.status)
-      ).length;
-
-      const activeBanquetBookings = banquetBookings.filter(
-        (b) => !["cancelled", "completed"].includes(b.status)
-      ).length;
-
-      const activeRestaurantBookings = restaurantBookings.filter(
-        (b) => !["cancelled", "completed"].includes(b.status)
-      ).length;
+      setAllRoomBookings(roomBookings);
+      setAllBanquetBookings(banquetBookings);
+      setAllRestaurantBookings(restaurantBookings);
 
       const activeBookings =
-        activeRoomBookings + activeBanquetBookings + activeRestaurantBookings;
+        roomBookings.filter((b) => !["cancelled", "checked-out"].includes(b.status)).length +
+        banquetBookings.filter((b) => !["cancelled", "completed"].includes(b.status)).length +
+        restaurantBookings.filter((b) => !["cancelled", "completed"].includes(b.status)).length;
 
       const todayRevenue = calculateTodayRevenue(
         roomBookings,
@@ -79,7 +143,6 @@ export const AdminDashboard = ({ setActiveTab }) => {
         occupancyRate,
       });
     } catch (err) {
-      console.error("Error loading dashboard stats:", err);
       setError("Failed to load dashboard statistics");
       showToast("Failed to load dashboard statistics", "error");
     } finally {
@@ -87,6 +150,9 @@ export const AdminDashboard = ({ setActiveTab }) => {
     }
   };
 
+  /* ---------------------------------------------
+      CALCULATIONS
+  ---------------------------------------------- */
   const calculateTodayRevenue = (
     roomBookings,
     banquetBookings,
@@ -98,13 +164,9 @@ export const AdminDashboard = ({ setActiveTab }) => {
     let revenue = 0;
 
     const checkRevenue = (booking) => {
-      const bookingDate = new Date(booking.createdAt);
-      bookingDate.setHours(0, 0, 0, 0);
-
-      if (
-        bookingDate.getTime() === today.getTime() &&
-        booking.paymentStatus === "completed"
-      ) {
+      const d = new Date(booking.createdAt);
+      d.setHours(0, 0, 0, 0);
+      if (d.getTime() === today.getTime() && booking.paymentStatus === "completed") {
         revenue += booking.totalPrice || 0;
       }
     };
@@ -118,20 +180,21 @@ export const AdminDashboard = ({ setActiveTab }) => {
 
   const calculateOccupancyRate = (rooms) => {
     if (!rooms.length) return 0;
-
-    const occupiedRooms = rooms.filter(
-      (room) => room.status === "occupied"
-    ).length;
-
-    return Math.round((occupiedRooms / rooms.length) * 100);
+    const occupied = rooms.filter((r) => r.status === "occupied").length;
+    return Math.round((occupied / rooms.length) * 100);
   };
 
+  /* ---------------------------------------------
+      LOADING / ERROR UI
+  ---------------------------------------------- */
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
         <div className="text-center">
           <Loader className="w-12 h-12 animate-spin text-[#B8860B] mx-auto mb-4" />
-          <p className="text-[#6a6a6a] font-semibold">Loading dashboard data...</p>
+          <p className="text-[#6a6a6a] font-semibold">
+            Loading dashboard data...
+          </p>
         </div>
       </div>
     );
@@ -140,154 +203,159 @@ export const AdminDashboard = ({ setActiveTab }) => {
   if (error) {
     return (
       <div className="text-center py-20">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <Activity className="w-8 h-8 text-red-600" />
-        </div>
-        <p className="text-red-600 mb-4 text-lg font-semibold">{error}</p>
-        <button
-          onClick={loadDashboardStats}
-          className="px-6 py-3 bg-gradient-to-r from-[#B8860B] to-[#D4AF37] text-white rounded-xl hover:shadow-lg hover:shadow-[#B8860B]/30 transition-all duration-300 font-semibold"
-        >
-          Retry
-        </button>
+        <p className="text-red-600 text-lg font-semibold">
+          {error}
+        </p>
       </div>
     );
   }
 
+  /* ---------------------------------------------
+      DYNAMIC STAT CARDS (UPDATED FOR MONTH MODE)
+  ---------------------------------------------- */
   const statCards = [
     {
-      title: 'Total Users',
+      title: "Total Users",
       value: stats.totalUsers,
       icon: Users,
-      gradient: 'from-blue-500 to-blue-600',
-      bgGradient: 'from-blue-50 to-blue-100',
-      iconBg: 'bg-blue-500',
+      gradient: "from-blue-500 to-blue-600",
+      bgGradient: "from-blue-50 to-blue-100",
+      iconBg: "bg-blue-500",
     },
     {
-      title: 'Active Bookings',
-      value: stats.activeBookings,
+      title: isMonthMode ? "Active Bookings (Month)" : "Active Bookings",
+      value: isMonthMode ? monthlyData.bookings.length : stats.activeBookings,
       icon: Calendar,
-      gradient: 'from-green-500 to-green-600',
-      bgGradient: 'from-green-50 to-green-100',
-      iconBg: 'bg-green-500',
+      gradient: "from-green-500 to-green-600",
+      bgGradient: "from-green-50 to-green-100",
+      iconBg: "bg-green-500",
     },
     {
-      title: 'Revenue (Today)',
-      value: `₹${stats.todayRevenue.toLocaleString()}`,
+      title: isMonthMode ? "Revenue (Month)" : "Revenue (Today)",
+      value: isMonthMode
+        ? `₹${monthlyData.revenue.toLocaleString()}`
+        : `₹${stats.todayRevenue.toLocaleString()}`,
       icon: TrendingUp,
-      gradient: 'from-[#B8860B] to-[#D4AF37]',
-      bgGradient: 'from-[#B8860B]/10 to-[#D4AF37]/10',
-      iconBg: 'bg-gradient-to-r from-[#B8860B] to-[#D4AF37]',
+      gradient: "from-[#B8860B] to-[#D4AF37]",
+      bgGradient: "from-[#B8860B]/10 to-[#D4AF37]/10",
+      iconBg: "bg-gradient-to-r from-[#B8860B] to-[#D4AF37]",
     },
     {
-      title: 'Occupancy Rate',
+      title: "Occupancy Rate",
       value: `${stats.occupancyRate}%`,
       icon: Percent,
-      gradient: 'from-purple-500 to-purple-600',
-      bgGradient: 'from-purple-50 to-purple-100',
-      iconBg: 'bg-purple-500',
+      gradient: "from-purple-500 to-purple-600",
+      bgGradient: "from-purple-50 to-purple-100",
+      iconBg: "bg-purple-500",
     },
   ];
 
   const quickActions = [
-    { label: 'Add New Room', tab: 'rooms', icon: '🛏️' },
-    { label: 'View Bookings', tab: 'bookings', icon: '📅' },
-    { label: 'Manage Users', tab: 'users', icon: '👤' },
-    { label: 'Restaurant Tables', tab: 'restaurant', icon: '🍽️' },
+    { label: "Add New Room", tab: "rooms", icon: "🛏️" },
+    { label: "View Bookings", tab: "bookings", icon: "📅" },
+    { label: "Manage Users", tab: "users", icon: "👤" },
+    { label: "Restaurant Tables", tab: "restaurant", icon: "🍽️" },
   ];
 
+  /* ---------------------------------------------
+      HEADER + MONTH SELECTOR (AT TOP)
+  ---------------------------------------------- */
   return (
     <div className="space-y-8">
-      {/* Welcome Header */}
-      <div>
-        <h2 className="text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-[#B8860B] to-[#D4AF37] mb-2">
-          Dashboard Overview
-        </h2>
-        <p className="text-[#6a6a6a]">Monitor your hotel's performance at a glance</p>
+
+      {/* HEADER */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-[#B8860B] to-[#D4AF37]">
+            Dashboard Overview
+          </h2>
+          <p className="text-[#6a6a6a]">Monitor your hotel's performance at a glance</p>
+        </div>
+
+        {/* MONTH SELECTOR DROPDOWN */}
+        <div className="flex items-center gap-3">
+          <label className="text-sm font-semibold text-[#2a2a2a]">Filter by Month:</label>
+          <select
+            value={selectedMonth === null ? "" : selectedMonth}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === "") {
+                setSelectedMonth(null);
+                setIsMonthMode(false);
+              } else {
+                handleMonthClick(parseInt(val));
+              }
+            }}
+            className="px-4 py-2 border-2 border-[#B8860B]/30 rounded-xl bg-white font-semibold text-[#2a2a2a] focus:outline-none focus:border-[#B8860B] transition"
+          >
+            <option value="">All Time</option>
+            {months.map((m, i) => (
+              <option key={i} value={i}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {/* Statistics Cards */}
+      {/* STAT CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {statCards.map((card, index) => {
+        {statCards.map((card) => {
           const Icon = card.icon;
           return (
             <div
               key={card.title}
-              className={`bg-gradient-to-br ${card.bgGradient} rounded-2xl p-6 border border-${card.gradient.split('-')[1]}-200 hover:shadow-xl hover:scale-105 transition-all duration-300`}
+              className={`bg-gradient-to-br ${card.bgGradient} rounded-2xl p-6 border hover:shadow-xl transition`}
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 ${card.iconBg} rounded-xl flex items-center justify-center shadow-lg`}>
+                <div
+                  className={`w-12 h-12 ${card.iconBg} rounded-xl flex items-center justify-center shadow-lg`}
+                >
                   <Icon className="w-6 h-6 text-white" />
                 </div>
-                <TrendingUp className="w-5 h-5 text-green-500" />
               </div>
-              <p className="text-sm text-gray-600 mb-1 font-medium uppercase tracking-wide">{card.title}</p>
-              <h3 className="text-3xl font-bold text-gray-800">{card.value}</h3>
+
+              <p className="text-sm text-gray-600 mb-1 uppercase tracking-wide">
+                {card.title}
+              </p>
+
+              <h3 className="text-3xl font-bold text-gray-800">
+                {card.value}
+              </h3>
             </div>
           );
         })}
       </div>
 
-      {/* Quick Actions & System Status Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Quick Actions */}
-        <div className="bg-gradient-to-br from-[#B8860B]/5 to-[#D4AF37]/5 rounded-2xl p-6 border border-[#B8860B]/20">
-          <h3 className="text-xl font-serif text-[#2a2a2a] mb-6 flex items-center gap-2">
-            <span className="w-2 h-2 bg-[#B8860B] rounded-full animate-pulse"></span>
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {quickActions.map((action) => (
-              <button
-                key={action.tab}
-                onClick={() => setActiveTab(action.tab)}
-                className="group flex items-center gap-3 p-4 bg-white rounded-xl hover:bg-gradient-to-r hover:from-[#B8860B] hover:to-[#D4AF37] hover:text-white transition-all duration-300 shadow-sm hover:shadow-lg border border-[#B8860B]/10"
-              >
-                <span className="text-2xl">{action.icon}</span>
-                <span className="flex-1 text-left font-semibold text-sm">{action.label}</span>
-                <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* QUICK ACTIONS */}
+      <div className="bg-gradient-to-br from-[#B8860B]/5 to-[#D4AF37]/5 rounded-2xl p-6 border border-[#B8860B]/20">
+        <h3 className="text-xl font-serif mb-6">
+          Quick Actions
+        </h3>
 
-        {/* System Status */}
-        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-200">
-          <h3 className="text-xl font-serif text-[#2a2a2a] mb-6 flex items-center gap-2">
-            <Activity className="w-5 h-5 text-green-600" />
-            System Status
-          </h3>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-green-100">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="font-semibold text-gray-700">Server Status</span>
-              </div>
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold uppercase">
-                Online
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-green-100">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="font-semibold text-gray-700">Database</span>
-              </div>
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs font-bold uppercase">
-                Connected
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-4 bg-white rounded-xl border border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                <span className="font-semibold text-gray-700">Last Backup</span>
-              </div>
-              <span className="text-sm text-gray-600">Today, 04:00 AM</span>
-            </div>
-          </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {quickActions.map((action) => (
+            <button
+              key={action.tab}
+              onClick={() => setActiveTab(action.tab)}
+              className="group flex items-center gap-3 p-4 bg-white rounded-xl border hover:bg-gradient-to-r hover:from-[#B8860B] hover:to-[#D4AF37] hover:text-white transition shadow-sm"
+            >
+              <span className="text-2xl">{action.icon}</span>
+              <span className="font-semibold">{action.label}</span>
+              <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition ml-auto" />
+            </button>
+          ))}
         </div>
       </div>
+
+      {/* ---------------------------------------------
+          NOTE:
+          - Month grid REMOVED - replaced with dropdown
+          - System Status section REMOVED COMPLETELY
+          - Booking list REMOVED from overview
+          - This keeps the dashboard clean & premium
+      ---------------------------------------------- */}
+
     </div>
   );
 };

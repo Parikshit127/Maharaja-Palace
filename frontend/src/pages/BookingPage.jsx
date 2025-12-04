@@ -1,32 +1,42 @@
-import React, { useState, useEffect } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { bookingAPI, roomAPI } from '../api/api';
-import { Calendar, Users, CreditCard, Check, AlertCircle, Loader } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { bookingAPI, roomAPI, paymentAPI } from "../api/api";
+import { CustomPaymentModal } from "../components/CustomPaymentModal";
+import {
+  Calendar,
+  Users,
+  CreditCard,
+  Check,
+  AlertCircle,
+  Loader,
+} from "lucide-react";
 
 export const BookingPage = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
 
-  const roomTypeId = searchParams.get('roomTypeId');
-  const checkIn = searchParams.get('checkIn');
-  const checkOut = searchParams.get('checkOut');
-  const guestsParam = searchParams.get('guests');
-  const priceParam = searchParams.get('price');
+  const roomTypeId = searchParams.get("roomTypeId");
+  const checkIn = searchParams.get("checkIn");
+  const checkOut = searchParams.get("checkOut");
+  const guestsParam = searchParams.get("guests");
+  const priceParam = searchParams.get("price");
 
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [paymentProcessing, setPaymentProcessing] = useState(false);
   const [roomType, setRoomType] = useState(null);
   const [availableRoom, setAvailableRoom] = useState(null);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [currentBooking, setCurrentBooking] = useState(null);
 
   const [formData, setFormData] = useState({
-    checkInDate: checkIn || '',
-    checkOutDate: checkOut || '',
+    checkInDate: checkIn || "",
+    checkOutDate: checkOut || "",
     numberOfGuests: parseInt(guestsParam) || 1,
-    specialRequests: '',
+    specialRequests: "",
   });
 
   const roomRate = parseInt(priceParam) || roomType?.basePrice || 0;
@@ -34,10 +44,20 @@ export const BookingPage = () => {
   useEffect(() => {
     const fetchRoomData = async () => {
       try {
+        console.log('🔍 Fetching room data with params:', {
+          roomTypeId,
+          checkIn: formData.checkInDate,
+          checkOut: formData.checkOutDate,
+          guests: formData.numberOfGuests
+        });
+
         // Fetch room type details
         const roomTypesResponse = await roomAPI.getRoomTypes();
-        const selectedRoomType = roomTypesResponse.data.roomTypes.find(rt => rt._id === roomTypeId);
+        const selectedRoomType = roomTypesResponse.data.roomTypes.find(
+          (rt) => rt._id === roomTypeId
+        );
         setRoomType(selectedRoomType);
+        console.log('✅ Room type found:', selectedRoomType?.name);
 
         // Fetch available rooms of this type
         const availableResponse = await roomAPI.getAvailableRooms({
@@ -46,14 +66,34 @@ export const BookingPage = () => {
           guests: formData.numberOfGuests,
         });
 
+        console.log('📊 Available rooms response:', {
+          total: availableResponse.data.count,
+          rooms: availableResponse.data.rooms.map(r => ({
+            id: r._id,
+            number: r.roomNumber,
+            type: r.roomType?.name,
+            status: r.status
+          }))
+        });
+
         // Find first available room of this type
-        const room = availableResponse.data.rooms.find(r => r.roomType._id === roomTypeId);
+        const room = availableResponse.data.rooms.find(
+          (r) => r.roomType._id === roomTypeId
+        );
+        
+        if (room) {
+          console.log('✅ Found available room:', room.roomNumber);
+        } else {
+          console.warn('⚠️ No available room found for this room type');
+          console.log('Available room types:', availableResponse.data.rooms.map(r => r.roomType?.name));
+        }
+        
         setAvailableRoom(room);
 
         setLoading(false);
       } catch (error) {
-        console.error('Error fetching room data:', error);
-        setError('Failed to load room details');
+        console.error("❌ Error fetching room data:", error);
+        setError("Failed to load room details");
         setLoading(false);
       }
     };
@@ -61,38 +101,48 @@ export const BookingPage = () => {
     if (roomTypeId) {
       fetchRoomData();
     }
-  }, [roomTypeId, formData.checkInDate, formData.checkOutDate, formData.numberOfGuests]);
+  }, [
+    roomTypeId,
+    formData.checkInDate,
+    formData.checkOutDate,
+    formData.numberOfGuests,
+  ]);
 
   useEffect(() => {
     if (!isAuthenticated) {
-      navigate('/login', { state: { from: `/booking?${searchParams.toString()}` } });
+      navigate("/login", {
+        state: { from: `/booking?${searchParams.toString()}` },
+      });
     }
   }, [isAuthenticated, navigate, searchParams]);
 
-  const [bookingType, setBookingType] = useState('full');
+  const [bookingType, setBookingType] = useState("full");
 
   const calculateNights = () => {
     if (!formData.checkInDate || !formData.checkOutDate) return 0;
     const checkInDate = new Date(formData.checkInDate);
     const checkOutDate = new Date(formData.checkOutDate);
-    const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+    const nights = Math.ceil(
+      (checkOutDate - checkInDate) / (1000 * 60 * 60 * 24)
+    );
     return nights > 0 ? nights : 0;
   };
 
   const calculateSubtotal = () => calculateNights() * roomRate;
   const calculateServiceFee = () => Math.round(calculateSubtotal() * 0.1);
   const calculateTax = () => Math.round(calculateSubtotal() * 0.12); // 12% GST
-  const calculateTotal = () => calculateSubtotal() + calculateServiceFee() + calculateTax();
+  const calculateTotal = () =>
+    calculateSubtotal() + calculateServiceFee() + calculateTax();
 
   const calculatePayableAmount = () => {
     const total = calculateTotal();
-    return bookingType === 'partial' ? Math.round(total * 0.1) : total;
+    return bookingType === "partial" ? Math.round(total * 0.1) : total;
   };
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
-      const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
       script.onload = () => resolve(true);
       script.onerror = () => resolve(false);
       document.body.appendChild(script);
@@ -101,11 +151,11 @@ export const BookingPage = () => {
 
   const handlePayment = async () => {
     setPaymentProcessing(true);
-    setError('');
+    setError("");
 
     try {
       if (!availableRoom) {
-        throw new Error('No available rooms found for selected dates');
+        throw new Error("No available rooms found for selected dates");
       }
 
       // Create booking first
@@ -120,66 +170,42 @@ export const BookingPage = () => {
       });
 
       const booking = bookingResponse.data.booking;
-
-      // Load Razorpay script
-      const scriptLoaded = await loadRazorpayScript();
-      if (!scriptLoaded) {
-        throw new Error('Razorpay SDK failed to load');
-      }
-
-      const payableAmount = calculatePayableAmount();
-
-      console.log('Initializing Razorpay with key:', import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_RmTd6UtrZwwmTT');
-
-      // Razorpay options
-      const options = {
-        key: import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_RmTd6UtrZwwmTT',
-        amount: payableAmount * 100,
-        currency: 'INR',
-        name: 'Maharaja Palace',
-        description: `${roomType?.name} - ${bookingType === 'partial' ? 'Booking Amount' : 'Full Payment'}`,
-        image: 'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=200',
-        handler: async function (response) {
-          console.log('Payment successful:', response);
-          setPaymentProcessing(false);
-          setSuccess(true);
-          setTimeout(() => navigate('/dashboard'), 2000);
-        },
-        prefill: {
-          name: `${user?.firstName} ${user?.lastName}`,
-          email: user?.email,
-          contact: user?.phone || '',
-        },
-        notes: {
-          booking_id: booking._id,
-          room_type: roomType?.name,
-          booking_type: bookingType,
-        },
-        theme: {
-          color: '#B8860B',
-        },
-        modal: {
-          ondismiss: function () {
-            setPaymentProcessing(false);
-            setError('Payment cancelled');
-          }
-        }
-      };
-
-      const razorpay = new window.Razorpay(options);
-      razorpay.open();
+      setCurrentBooking(booking);
       setPaymentProcessing(false);
+      
+      // Show custom payment modal
+      setShowPaymentModal(true);
     } catch (err) {
-      setError(err.response?.data?.message || err.message || 'Booking failed');
+      setError(err.response?.data?.message || err.message || "Booking failed");
       setPaymentProcessing(false);
     }
   };
+
+  const handleTestPaymentComplete = async () => {
+    try {
+      // Mark booking as paid
+      const markResp = await bookingAPI.markAsPaid(currentBooking._id);
+      if (markResp?.data?.success) {
+        setShowPaymentModal(false);
+        setSuccess(true);
+        setTimeout(() => navigate("/dashboard"), 1500);
+      } else {
+        throw new Error(
+          markResp?.data?.message || "Failed to mark booking as paid"
+        );
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || err.message || "Payment failed");
+      setShowPaymentModal(false);
+    }
+  };
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (calculateNights() <= 0) {
-      setError('Check-out date must be after check-in date');
+      setError("Check-out date must be after check-in date");
       return;
     }
 
@@ -195,7 +221,9 @@ export const BookingPage = () => {
       <div className="min-h-screen bg-[#FBF9F4] flex items-center justify-center">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-[#B8860B] border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-[#B8860B] font-semibold">Loading booking details...</p>
+          <p className="text-[#B8860B] font-semibold">
+            Loading booking details...
+          </p>
         </div>
       </div>
     );
@@ -208,9 +236,17 @@ export const BookingPage = () => {
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
-          <h2 className="text-3xl font-serif text-[#2a2a2a] mb-4">No Rooms Available</h2>
-          <p className="text-[#6a6a6a] mb-6">Sorry, no rooms are available for the selected dates. Please try different dates.</p>
-          <button onClick={() => navigate('/rooms')} className="px-8 py-3 bg-[#B8860B] text-white rounded-lg hover:bg-[#8B6914] transition-colors">
+          <h2 className="text-3xl font-serif text-[#2a2a2a] mb-4">
+            No Rooms Available
+          </h2>
+          <p className="text-[#6a6a6a] mb-6">
+            Sorry, no rooms are available for the selected dates. Please try
+            different dates.
+          </p>
+          <button
+            onClick={() => navigate("/rooms")}
+            className="px-8 py-3 bg-[#B8860B] text-white rounded-lg hover:bg-[#8B6914] transition-colors"
+          >
             Back to Rooms
           </button>
         </div>
@@ -225,8 +261,12 @@ export const BookingPage = () => {
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <Check className="w-10 h-10 text-green-600" />
           </div>
-          <h2 className="text-3xl font-serif text-[#2a2a2a] mb-4">Booking Confirmed!</h2>
-          <p className="text-[#6a6a6a] mb-6">Your payment was successful. Redirecting to dashboard...</p>
+          <h2 className="text-3xl font-serif text-[#2a2a2a] mb-4">
+            Booking Confirmed!
+          </h2>
+          <p className="text-[#6a6a6a] mb-6">
+            Your payment was successful. Redirecting to dashboard...
+          </p>
           <div className="w-12 h-12 border-4 border-[#B8860B] border-t-transparent rounded-full animate-spin mx-auto"></div>
         </div>
       </div>
@@ -238,60 +278,85 @@ export const BookingPage = () => {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-5xl font-serif text-[#2a2a2a] mb-4">Complete Your Booking</h1>
-          <p className="text-lg text-[#6a6a6a]">You're just one step away from your royal experience</p>
+          <h1 className="text-5xl font-serif text-[#2a2a2a] mb-4">
+            Complete Your Booking
+          </h1>
+          <p className="text-lg text-[#6a6a6a]">
+            You're just one step away from your royal experience
+          </p>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Booking Form */}
           <div className="lg:col-span-2">
-            <form onSubmit={handleSubmit} className="bg-white rounded-2xl shadow-lg border border-[#B8860B]/20 p-8 space-y-8">
+            <form
+              onSubmit={handleSubmit}
+              className="bg-white rounded-2xl shadow-lg border border-[#B8860B]/20 p-8 space-y-8"
+            >
               {/* Room Details */}
               <div className="border-b border-[#B8860B]/20 pb-6">
-                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">Room Details</h2>
+                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">
+                  Room Details
+                </h2>
                 <div className="bg-[#B8860B]/5 rounded-xl p-6">
-                  <h3 className="text-xl font-semibold text-[#B8860B] mb-2">{roomType?.name}</h3>
-                  <p className="text-[#6a6a6a]">₹{roomRate.toLocaleString()} per night</p>
-                  <p className="text-sm text-[#8a8a8a] mt-2">Room: {availableRoom?.roomNumber}</p>
+                  <h3 className="text-xl font-semibold text-[#B8860B] mb-2">
+                    {roomType?.name}
+                  </h3>
+                  <p className="text-[#6a6a6a]">
+                    ₹{roomRate.toLocaleString()} per night
+                  </p>
+                  <p className="text-sm text-[#8a8a8a] mt-2">
+                    Room: {availableRoom?.roomNumber}
+                  </p>
                 </div>
               </div>
 
               {/* Guest Information */}
               <div className="border-b border-[#B8860B]/20 pb-6">
-                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">Guest Information</h2>
+                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">
+                  Guest Information
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">First Name</label>
+                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">
+                      First Name
+                    </label>
                     <input
                       type="text"
-                      value={user?.firstName || ''}
+                      value={user?.firstName || ""}
                       disabled
                       className="w-full px-4 py-3 border-2 border-[#B8860B]/20 rounded-lg bg-gray-50"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">Last Name</label>
+                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">
+                      Last Name
+                    </label>
                     <input
                       type="text"
-                      value={user?.lastName || ''}
+                      value={user?.lastName || ""}
                       disabled
                       className="w-full px-4 py-3 border-2 border-[#B8860B]/20 rounded-lg bg-gray-50"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">Email</label>
+                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">
+                      Email
+                    </label>
                     <input
                       type="email"
-                      value={user?.email || ''}
+                      value={user?.email || ""}
                       disabled
                       className="w-full px-4 py-3 border-2 border-[#B8860B]/20 rounded-lg bg-gray-50"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">Phone</label>
+                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">
+                      Phone
+                    </label>
                     <input
                       type="tel"
-                      value={user?.phone || ''}
+                      value={user?.phone || ""}
                       disabled
                       className="w-full px-4 py-3 border-2 border-[#B8860B]/20 rounded-lg bg-gray-50"
                     />
@@ -301,30 +366,46 @@ export const BookingPage = () => {
 
               {/* Booking Dates */}
               <div className="border-b border-[#B8860B]/20 pb-6">
-                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">Booking Dates</h2>
+                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">
+                  Booking Dates
+                </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">Check-in Date</label>
+                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">
+                      Check-in Date
+                    </label>
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B8860B]" />
                       <input
                         type="date"
                         required
                         value={formData.checkInDate}
-                        onChange={(e) => setFormData({ ...formData, checkInDate: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            checkInDate: e.target.value,
+                          })
+                        }
                         className="w-full pl-12 pr-4 py-3 border-2 border-[#B8860B]/30 rounded-lg focus:border-[#B8860B] focus:outline-none"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">Check-out Date</label>
+                    <label className="block text-sm font-semibold text-[#2a2a2a] mb-2">
+                      Check-out Date
+                    </label>
                     <div className="relative">
                       <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B8860B]" />
                       <input
                         type="date"
                         required
                         value={formData.checkOutDate}
-                        onChange={(e) => setFormData({ ...formData, checkOutDate: e.target.value })}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            checkOutDate: e.target.value,
+                          })
+                        }
                         className="w-full pl-12 pr-4 py-3 border-2 border-[#B8860B]/30 rounded-lg focus:border-[#B8860B] focus:outline-none"
                       />
                     </div>
@@ -334,7 +415,9 @@ export const BookingPage = () => {
 
               {/* Number of Guests */}
               <div className="border-b border-[#B8860B]/20 pb-6">
-                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">Number of Guests</h2>
+                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">
+                  Number of Guests
+                </h2>
                 <div className="relative">
                   <Users className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-[#B8860B]" />
                   <input
@@ -343,7 +426,12 @@ export const BookingPage = () => {
                     max="10"
                     required
                     value={formData.numberOfGuests}
-                    onChange={(e) => setFormData({ ...formData, numberOfGuests: parseInt(e.target.value) })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        numberOfGuests: parseInt(e.target.value),
+                      })
+                    }
                     className="w-full pl-12 pr-4 py-3 border-2 border-[#B8860B]/30 rounded-lg focus:border-[#B8860B] focus:outline-none"
                   />
                 </div>
@@ -351,20 +439,26 @@ export const BookingPage = () => {
 
               {/* Payment Options */}
               <div className="border-b border-[#B8860B]/20 pb-6">
-                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">Payment Options</h2>
+                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">
+                  Payment Options
+                </h2>
                 <div className="space-y-4">
                   <label className="flex items-center p-4 border-2 border-[#B8860B]/20 rounded-xl cursor-pointer hover:bg-[#B8860B]/5 transition-colors">
                     <input
                       type="radio"
                       name="bookingType"
                       value="full"
-                      checked={bookingType === 'full'}
+                      checked={bookingType === "full"}
                       onChange={(e) => setBookingType(e.target.value)}
                       className="w-5 h-5 text-[#B8860B] focus:ring-[#B8860B]"
                     />
                     <div className="ml-4">
-                      <span className="block font-semibold text-[#2a2a2a]">Pay Full Amount</span>
-                      <span className="block text-sm text-[#6a6a6a]">Pay the complete amount now</span>
+                      <span className="block font-semibold text-[#2a2a2a]">
+                        Pay Full Amount
+                      </span>
+                      <span className="block text-sm text-[#6a6a6a]">
+                        Pay the complete amount now
+                      </span>
                     </div>
                   </label>
 
@@ -373,13 +467,17 @@ export const BookingPage = () => {
                       type="radio"
                       name="bookingType"
                       value="partial"
-                      checked={bookingType === 'partial'}
+                      checked={bookingType === "partial"}
                       onChange={(e) => setBookingType(e.target.value)}
                       className="w-5 h-5 text-[#B8860B] focus:ring-[#B8860B]"
                     />
                     <div className="ml-4">
-                      <span className="block font-semibold text-[#2a2a2a]">Pay Booking Amount (10%)</span>
-                      <span className="block text-sm text-[#6a6a6a]">Pay 10% now to confirm, remaining later</span>
+                      <span className="block font-semibold text-[#2a2a2a]">
+                        Pay Booking Amount (10%)
+                      </span>
+                      <span className="block text-sm text-[#6a6a6a]">
+                        Pay 10% now to confirm, remaining later
+                      </span>
                     </div>
                   </label>
                 </div>
@@ -387,12 +485,19 @@ export const BookingPage = () => {
 
               {/* Special Requests */}
               <div>
-                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">Special Requests (Optional)</h2>
+                <h2 className="text-2xl font-serif text-[#2a2a2a] mb-4">
+                  Special Requests (Optional)
+                </h2>
                 <textarea
                   rows="4"
                   placeholder="Any special requirements or preferences..."
                   value={formData.specialRequests}
-                  onChange={(e) => setFormData({ ...formData, specialRequests: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      specialRequests: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-3 border-2 border-[#B8860B]/30 rounded-lg focus:border-[#B8860B] focus:outline-none resize-none"
                 ></textarea>
               </div>
@@ -409,46 +514,70 @@ export const BookingPage = () => {
           {/* Price Summary */}
           <div className="lg:col-span-1">
             <div className="sticky top-24 bg-white rounded-2xl shadow-xl border-2 border-[#B8860B]/20 p-8">
-              <h2 className="text-2xl font-serif text-[#2a2a2a] mb-6">Price Summary</h2>
+              <h2 className="text-2xl font-serif text-[#2a2a2a] mb-6">
+                Price Summary
+              </h2>
 
               <div className="space-y-4 mb-6">
                 <div className="flex justify-between text-[#6a6a6a]">
-                  <span>₹{roomRate.toLocaleString()} × {calculateNights()} night{calculateNights() !== 1 ? 's' : ''}</span>
-                  <span className="font-semibold text-[#2a2a2a]">₹{calculateSubtotal().toLocaleString()}</span>
+                  <span>
+                    ₹{roomRate.toLocaleString()} × {calculateNights()} night
+                    {calculateNights() !== 1 ? "s" : ""}
+                  </span>
+                  <span className="font-semibold text-[#2a2a2a]">
+                    ₹{calculateSubtotal().toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between text-[#6a6a6a]">
                   <span>Service fee</span>
-                  <span className="font-semibold text-[#2a2a2a]">₹{calculateServiceFee().toLocaleString()}</span>
+                  <span className="font-semibold text-[#2a2a2a]">
+                    ₹{calculateServiceFee().toLocaleString()}
+                  </span>
                 </div>
                 <div className="flex justify-between text-[#6a6a6a]">
                   <span>GST (12%)</span>
-                  <span className="font-semibold text-[#2a2a2a]">₹{calculateTax().toLocaleString()}</span>
+                  <span className="font-semibold text-[#2a2a2a]">
+                    ₹{calculateTax().toLocaleString()}
+                  </span>
                 </div>
               </div>
 
               <div className="border-t-2 border-[#B8860B]/20 pt-4 mb-6">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-xl font-bold text-[#2a2a2a]">Total</span>
-                  <span className="text-2xl font-bold text-[#2a2a2a]">₹{calculateTotal().toLocaleString()}</span>
+                  <span className="text-xl font-bold text-[#2a2a2a]">
+                    Total
+                  </span>
+                  <span className="text-2xl font-bold text-[#2a2a2a]">
+                    ₹{calculateTotal().toLocaleString()}
+                  </span>
                 </div>
 
-                {bookingType === 'partial' && (
+                {bookingType === "partial" && (
                   <>
                     <div className="flex justify-between items-center text-[#B8860B] mt-2">
                       <span className="font-semibold">Payable Now (10%)</span>
-                      <span className="font-bold">₹{calculatePayableAmount().toLocaleString()}</span>
+                      <span className="font-bold">
+                        ₹{calculatePayableAmount().toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center text-[#6a6a6a] text-sm mt-1">
                       <span>Due Later</span>
-                      <span>₹{(calculateTotal() - calculatePayableAmount()).toLocaleString()}</span>
+                      <span>
+                        ₹
+                        {(
+                          calculateTotal() - calculatePayableAmount()
+                        ).toLocaleString()}
+                      </span>
                     </div>
                   </>
                 )}
 
-                {bookingType === 'full' && (
+                {bookingType === "full" && (
                   <div className="flex justify-between items-center text-[#B8860B] mt-2">
                     <span className="font-semibold">Payable Now</span>
-                    <span className="font-bold">₹{calculateTotal().toLocaleString()}</span>
+                    <span className="font-bold">
+                      ₹{calculateTotal().toLocaleString()}
+                    </span>
                   </div>
                 )}
               </div>
@@ -471,6 +600,8 @@ export const BookingPage = () => {
                 )}
               </button>
 
+
+
               <div className="mt-6 space-y-3">
                 <div className="flex items-center gap-2 text-sm text-[#6a6a6a]">
                   <Check className="w-4 h-4 text-green-600" />
@@ -491,6 +622,18 @@ export const BookingPage = () => {
       </div>
 
 
+      <CustomPaymentModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        amount={calculatePayableAmount()}
+        bookingDetails={{
+          bookingNumber: currentBooking?.bookingNumber,
+          roomType: roomType?.name,
+          checkIn: formData.checkInDate,
+          checkOut: formData.checkOutDate,
+        }}
+        onTestComplete={handleTestPaymentComplete}
+      />
     </div>
   );
 };

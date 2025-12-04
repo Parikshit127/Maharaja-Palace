@@ -3,7 +3,12 @@ import { authAPI, bookingAPI, banquetAPI, restaurantAPI } from '../api/api';
 import { Mail, Phone, Calendar, Loader, X, Eye } from 'lucide-react';
 import { showToast } from '../utils/toast';
 
-export const AdminUsers = () => {
+const months = [
+  "January","February","March","April","May","June",
+  "July","August","September","October","November","December",
+];
+
+export const AdminUsers = ({ selectedMonth, setSelectedMonth }) => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -87,15 +92,47 @@ export const AdminUsers = () => {
     );
   }
 
+  // Helper to get month index from date
+  const getMonthIndex = (date) => {
+    const d = new Date(date);
+    return d.getMonth();
+  };
+
+  // Filter users by month if selected
+  const filteredUsers = selectedMonth !== null && selectedMonth !== undefined
+    ? users.filter((u) => getMonthIndex(u.createdAt) === selectedMonth)
+    : users;
+
   return (
     <div>
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-serif text-[#2a2a2a]">User Management</h2>
-        <p className="text-gray-600">{users.length} total users</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div>
+          <h2 className="text-3xl font-serif text-transparent bg-clip-text bg-gradient-to-r from-[#B8860B] to-[#D4AF37] mb-2">User Management</h2>
+          <p className="text-[#6a6a6a]">{filteredUsers.length} total users</p>
+        </div>
+        {/* Month Filter */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-semibold text-[#2a2a2a]">Month:</label>
+          <select
+            value={selectedMonth === null ? "" : selectedMonth}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSelectedMonth(val === "" ? null : parseInt(val));
+            }}
+            className="px-4 py-2 border-2 border-[#B8860B]/30 rounded-xl bg-white font-semibold text-[#2a2a2a] focus:outline-none focus:border-[#B8860B] transition"
+          >
+            <option value="">All Months</option>
+            {months.map((m, i) => (
+              <option key={i} value={i}>
+                {m}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {users.map((user) => (
+        {filteredUsers.map((user) => (
           <div
             key={user._id}
             className="bg-white border border-gray-200 rounded-lg p-6 hover:shadow-lg transition-shadow"

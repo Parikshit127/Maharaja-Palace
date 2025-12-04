@@ -275,12 +275,53 @@ export const AdminRooms = () => {
     }
   };
 
-  const addImage = () => {
-    const url = prompt('Enter image URL:');
-    const alt = prompt('Enter image description:');
-    if (url && alt) {
-      setFormData({ ...formData, images: [...formData.images, { url, alt }] });
+  const [uploadingImage, setUploadingImage] = useState(false);
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      showToast('Please select an image file', 'error');
+      return;
     }
+
+    // Validate file size (5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      showToast('Image size must be less than 5MB', 'error');
+      return;
+    }
+
+    setUploadingImage(true);
+    const formDataUpload = new FormData();
+    formDataUpload.append('image', file);
+
+    try {
+      const response = await roomAPI.uploadImage(formDataUpload);
+      if (response.data.success) {
+        const alt = prompt('Enter image description:') || 'Room image';
+        setFormData({
+          ...formData,
+          images: [...formData.images, { url: response.data.image.url, alt }],
+        });
+        showToast('Image uploaded successfully', 'success');
+      }
+    } catch (error) {
+      console.error('Image upload error:', error);
+      showToast(error.response?.data?.message || 'Failed to upload image', 'error');
+    } finally {
+      setUploadingImage(false);
+      // Reset file input
+      e.target.value = '';
+    }
+  };
+
+  const removeImage = (index) => {
+    setFormData({
+      ...formData,
+      images: formData.images.filter((_, i) => i !== index),
+    });
   };
 
   if (loading) {
@@ -554,14 +595,65 @@ export const AdminRooms = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-2">Images</label>
-                    <div className="space-y-2 mb-2">
+                    <div className="space-y-3 mb-3">
                       {formData.images.map((img, index) => (
-                        <div key={index} className="text-sm text-gray-600">
-                          {img.alt}: {img.url.substring(0, 50)}...
+                        <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                          <img 
+                            src={img.url} 
+                            alt={img.alt} 
+                            className="w-20 h-20 object-cover rounded"
+                            onError={(e) => {
+                              e.target.src = 'https://via.placeholder.com/80?text=Image';
+                            }}
+                          />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-700">{img.alt}</p>
+                            <p className="text-xs text-gray-500 truncate">{img.url.substring(0, 50)}...</p>
+                          </div>
+                          {modalMode !== 'view' && (
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="p-2 text-red-600 hover:bg-red-50 rounded transition-colors"
+                              title="Remove image"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          )}
                         </div>
                       ))}
                     </div>
-                    <button onClick={addImage} className="text-sm text-[#B8860B] hover:underline">+ Add Image</button>
+                    {modalMode !== 'view' && (
+                      <div>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleImageUpload}
+                          disabled={uploadingImage}
+                          className="hidden"
+                          id="image-upload"
+                        />
+                        <label
+                          htmlFor="image-upload"
+                          className={`inline-flex items-center gap-2 px-4 py-2 bg-[#B8860B] text-white rounded-lg hover:bg-[#8B6914] transition-colors cursor-pointer ${
+                            uploadingImage ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                        >
+                          {uploadingImage ? (
+                            <>
+                              <Loader className="w-4 h-4 animate-spin" />
+                              Uploading...
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="w-4 h-4" />
+                              Upload Image
+                            </>
+                          )}
+                        </label>
+                        <p className="text-xs text-gray-500 mt-2">Max size: 5MB. Formats: JPG, PNG, WEBP</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               ) : (

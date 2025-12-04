@@ -252,7 +252,7 @@ export const updateRestaurantBookingPayment = async (req, res, next) => {
     }
 
     // Check if user is the booking owner
-    if (booking.guest.toString() !== req.user.id) {
+    if (booking.guest.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: 'Not authorized to update this booking',
@@ -317,7 +317,7 @@ export const cancelRestaurantBooking = async (req, res, next) => {
     }
 
     // Check if user is the booking owner
-    if (booking.guest.toString() !== req.user.id) {
+    if (booking.guest.toString() !== req.user._id.toString()) {
       return res.status(403).json({
         success: false,
         message: "You are not authorized to cancel this booking",
@@ -548,5 +548,286 @@ export const deleteRestaurantTable = async (req, res, next) => {
   } catch (error) {
     logger.error(`Delete restaurant table error: ${error.message}`);
     next(error);
+  }
+};
+
+// Dev helper: mark booking as paid without payment gateway
+export const markRestaurantBookingAsPaid = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    if (process.env.NODE_ENV === "production") {
+      return res.status(403).json({
+        success: false,
+        message: "Mark-as-paid is disabled in production",
+      });
+    }
+
+    const booking = await RestaurantBooking.findById(id).populate("guest");
+
+    if (!booking) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Booking not found" });
+    }
+
+    // Only allow owner or admin to mark paid
+    if (
+      booking.guest._id.toString() !== req.user._id.toString() &&
+      req.user.role !== "admin"
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to mark this booking as paid",
+      });
+    }
+
+    booking.paidAmount = booking.totalPrice;
+    booking.transactionId = `dev_test_${Date.now()}`;
+    booking.paymentStatus = "completed";
+    booking.status = "confirmed";
+
+    await booking.save();
+
+    logger.info(
+      `Restaurant booking marked as paid (dev): ${booking.bookingNumber} by ${req.user.id}`
+    );
+
+    res
+      .status(200)
+      .json({ success: true, message: "Booking marked as paid", booking });
+  } catch (error) {
+    logger.error(`Mark restaurant booking paid error: ${error.message}`);
+    next(error);
+  }
+};
+
+// ===========================
+// REFUNDS
+// ===========================
+
+// Guest - Request Refund
+export const requestRestaurantRefund = async (req, res, next) => {
+  try {
+    const { bookingId } = req.params;
+    const { reason } = req.body;
+
+    const booking = await RestaurantBooking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Verify user owns the booking
+    if (booking.guest.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to refund this booking",
+      });
+    }
+
+    // Check if payment is completed
+    if (booking.paymentStatus !== "completed") {
+      return res.status(400).json({
+        success: false,
+        message: "Can only refund completed payments",
+      });
+    }
+
+    // Check if refund already exists
+    if (
+      booking.refundStatus === "requested" ||
+      booking.refundStatus === "processed"
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "Refund already requested for this booking",
+      });
+    }
+
+    // Update booking with refund request
+    booking.refundStatus = "requested";
+    booking.refundAmount = booking.paidAmount;
+    booking.refundReason = reason || "No reason provided";
+    booking.refundRequestedAt = new Date();
+
+    await booking.save();
+
+    logger.info(`Refund requested for restaurant booking: ${booking.bookingNumber}`);
+
+    res.status(200).json({
+      success: true,
+      message: "Refund request submitted successfully",
+      booking,
+    });
+  } catch (error) {
+    logger.error(`Request restaurant refund error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Admin - Approve/Reject Refund
+export const updateRestaurantRefundStatus = async (req, res, next) => {
+  try {
+    const { bookingId } = req.params;
+    const { action, reason } = req.body; // action: 'approve' or 'reject'
+
+    if (!["approve", "reject"].includes(action)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid action. Must be approve or reject",
+      });
+    }
+
+    const booking = await RestaurantBooking.findById(bookingId).populate([
+      "guest",
+      "table",
+    ]);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    if (booking.refundStatus !== "requested") {
+      return res.status(400).json({
+        success: false,
+        message: "Refund must be in requested status",
+      });
+    }
+
+    if (action === "reject") {
+      booking.refundStatus = "rejected";
+      booking.refundRejectionReason = reason || "Refund request denied by admin";
+      booking.refundProcessedBy = req.user._id;
+      await booking.save();
+
+      logger.info(`Refund rejected for restaurant booking: ${booking.bookingNumber}`);
+
+      return res.status(200).json({
+        success: true,
+        message: "Refund request rejected",
+        booking,
+      });
+    }
+
+    // Approve refund - will be processed after 12 hours
+    if (action === "approve") {
+      booking.refundStatus = "approved";
+      booking.refundApprovedAt = new Date();
+      booking.refundProcessedBy = req.user._id;
+      
+      await booking.save();
+
+      logger.info(
+        `Refund approved for restaurant booking: ${booking.bookingNumber}. Will process in 12 hours.`
+      );
+
+      res.status(200).json({
+        success: true,
+        message: "Refund approved. Payment will be processed in 12 hours.",
+        booking,
+        processingTime: "12 hours",
+      });
+    }
+  } catch (error) {
+    logger.error(`Update restaurant refund status error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Guest - Get Refund Status
+export const getRestaurantRefundStatus = async (req, res, next) => {
+  try {
+    const { bookingId } = req.params;
+
+    const booking = await RestaurantBooking.findById(bookingId);
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    if (booking.guest.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+      return res.status(403).json({
+        success: false,
+        message: "Not authorized to view this booking",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      refundStatus: booking.refundStatus,
+      refundAmount: booking.refundAmount,
+      refundReason: booking.refundReason,
+      refundRequestedAt: booking.refundRequestedAt,
+      refundProcessedAt: booking.refundProcessedAt,
+      refundId: booking.refundId,
+    });
+  } catch (error) {
+    logger.error(`Get restaurant refund status error: ${error.message}`);
+    next(error);
+  }
+};
+
+// Cron job helper: Process scheduled refunds (approved > 12 hours ago)
+export const processScheduledRestaurantRefunds = async () => {
+  try {
+    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    
+    // Find bookings approved for refund more than 12 hours ago but not yet processed
+    const bookingsToRefund = await RestaurantBooking.find({
+      refundStatus: "approved",
+      refundApprovedAt: { $lte: twelveHoursAgo },
+    });
+
+    if (bookingsToRefund.length > 0) {
+      logger.info(`Found ${bookingsToRefund.length} restaurant bookings to process for refund`);
+    }
+
+    for (const booking of bookingsToRefund) {
+      try {
+        // Process actual refund via Razorpay
+        // Note: Assuming refundPayment service is imported
+        const { refundPayment } = await import("../services/paymentService.js");
+        
+        const refundResult = await refundPayment(
+          booking.transactionId,
+          booking.paidAmount
+        );
+
+        if (refundResult.success) {
+          // Update booking with refund details
+          booking.refundStatus = "processed";
+          booking.refundId = refundResult.refundId;
+          booking.refundProcessedAt = new Date();
+          booking.paymentStatus = "refunded";
+          booking.status = "cancelled"; // Auto-cancel on full refund
+
+          await booking.save();
+
+          logger.info(
+            `Auto-processed refund for restaurant booking: ${booking.bookingNumber} - Refund ID: ${refundResult.refundId}`
+          );
+        } else {
+          logger.error(
+            `Failed to auto-process refund for ${booking.bookingNumber}: ${refundResult.error}`
+          );
+        }
+      } catch (err) {
+        logger.error(
+          `Error processing refund for ${booking.bookingNumber}: ${err.message}`
+        );
+      }
+    }
+  } catch (error) {
+    logger.error(`Process scheduled restaurant refunds error: ${error.message}`);
   }
 };

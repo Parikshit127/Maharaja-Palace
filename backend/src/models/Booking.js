@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -8,21 +8,21 @@ const bookingSchema = new mongoose.Schema(
     },
     guest: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
     },
     room: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'Room',
+      ref: "Room",
       required: true,
     },
     checkInDate: {
       type: Date,
-      required: [true, 'Please provide check-in date'],
+      required: [true, "Please provide check-in date"],
     },
     checkOutDate: {
       type: Date,
-      required: [true, 'Please provide check-out date'],
+      required: [true, "Please provide check-out date"],
     },
     numberOfNights: {
       type: Number,
@@ -30,7 +30,7 @@ const bookingSchema = new mongoose.Schema(
     },
     numberOfGuests: {
       type: Number,
-      required: [true, 'Please specify number of guests'],
+      required: [true, "Please specify number of guests"],
       min: 1,
     },
     roomRate: {
@@ -47,30 +47,68 @@ const bookingSchema = new mongoose.Schema(
     },
     bookingType: {
       type: String,
-      enum: ['full', 'partial'],
-      default: 'full',
+      enum: ["full", "partial"],
+      default: "full",
     },
     specialRequests: {
       type: String,
-      default: '',
+      default: "",
     },
     status: {
       type: String,
-      enum: ['pending', 'confirmed', 'checked-in', 'checked-out', 'cancelled'],
-      default: 'pending',
+      enum: ["pending", "confirmed", "checked-in", "checked-out", "cancelled"],
+      default: "pending",
     },
     paymentStatus: {
       type: String,
-      enum: ['pending', 'completed', 'failed', 'refunded'],
-      default: 'pending',
+      enum: ["pending", "completed", "failed", "refunded"],
+      default: "pending",
     },
     paymentMethod: {
       type: String,
-      enum: ['credit_card', 'debit_card', 'razorpay', 'bank_transfer'],
+      enum: ["credit_card", "debit_card", "razorpay", "bank_transfer"],
       default: null,
     },
     transactionId: {
       type: String,
+      default: null,
+    },
+    refundStatus: {
+      type: String,
+      enum: ["none", "requested", "approved", "rejected", "processed"],
+      default: "none",
+    },
+    refundAmount: {
+      type: Number,
+      default: 0,
+    },
+    refundId: {
+      type: String,
+      default: null,
+    },
+    refundReason: {
+      type: String,
+      default: null,
+    },
+    refundRequestedAt: {
+      type: Date,
+      default: null,
+    },
+    refundApprovedAt: {
+      type: Date,
+      default: null,
+    },
+    refundProcessedAt: {
+      type: Date,
+      default: null,
+    },
+    refundRejectionReason: {
+      type: String,
+      default: null,
+    },
+    refundProcessedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       default: null,
     },
   },
@@ -80,7 +118,7 @@ const bookingSchema = new mongoose.Schema(
 );
 
 // Auto-generate booking number
-bookingSchema.pre('save', function (next) {
+bookingSchema.pre("save", function (next) {
   if (this.isNew && !this.bookingNumber) {
     const timestamp = Date.now();
     const random = Math.floor(Math.random() * 10000);
@@ -89,4 +127,4 @@ bookingSchema.pre('save', function (next) {
   next();
 });
 
-export default mongoose.model('Booking', bookingSchema);
+export default mongoose.model("Booking", bookingSchema);
