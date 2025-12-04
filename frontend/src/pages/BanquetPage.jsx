@@ -22,47 +22,47 @@ export const BanquetPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  const fetchHalls = async () => {
-    try {
-      setLoading(true);
-      console.log("🔍 Fetching halls from API...");
-      
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/banquet/halls`
-      );
+    const fetchHalls = async () => {
+      try {
+        setLoading(true);
+        console.log("🔍 Fetching halls from API...");
 
-      console.log("📦 API Response:", response.data);
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_URL}/banquet/halls`
+        );
 
-      if (response.data.success && response.data.banquetHalls) {
-        console.log(`✅ Found ${response.data.banquetHalls.length} halls`);
-        
-        // Map backend data to match frontend structure
-        const mappedHalls = response.data.banquetHalls.map((hall) => ({
-          id: hall._id,
-          name: hall.name,
-          image:
-            hall.images?.[0]?.url ||
-            "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1600&q=80",
-          description: hall.description,
-          capacity: hall.capacity.banquet || 0,
-          areaSqFt: Math.floor((hall.capacity.banquet || 0) * 15), // Estimate: 15 sq ft per guest
-        }));
-        
-        console.log("🎯 Mapped halls:", mappedHalls);
-        setHalls(mappedHalls);
-      } else {
-        console.warn("⚠️ No halls found in response");
+        console.log("📦 API Response:", response.data);
+
+        if (response.data.success && response.data.banquetHalls) {
+          console.log(`✅ Found ${response.data.banquetHalls.length} halls`);
+
+          // Map backend data to match frontend structure
+          const mappedHalls = response.data.banquetHalls.map((hall) => ({
+            id: hall._id,
+            name: hall.name,
+            image:
+              hall.images?.[0]?.url ||
+              "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=1600&q=80",
+            description: hall.description,
+            capacity: hall.capacity.banquet || 0,
+            areaSqFt: Math.floor((hall.capacity.banquet || 0) * 15), // Estimate: 15 sq ft per guest
+          }));
+
+          console.log("🎯 Mapped halls:", mappedHalls);
+          setHalls(mappedHalls);
+        } else {
+          console.warn("⚠️ No halls found in response");
+        }
+      } catch (error) {
+        console.error("❌ Error fetching banquet halls:", error);
+        console.error("Error details:", error.response?.data || error.message);
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error("❌ Error fetching banquet halls:", error);
-      console.error("Error details:", error.response?.data || error.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    };
 
-  fetchHalls();
-}, []);
+    fetchHalls();
+  }, []);
 
   const [currentIndex, setCurrentIndex] = useState(0);
 
@@ -313,9 +313,8 @@ export const BanquetPage = () => {
                       <button
                         key={idx}
                         onClick={() => setCurrentIndex(idx)}
-                        className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                          idx === currentIndex ? "bg-gold w-6" : "bg-gray-300"
-                        }`}
+                        className={`w-2 h-2 rounded-full transition-all duration-300 ${idx === currentIndex ? "bg-gold w-6" : "bg-gray-300"
+                          }`}
                       />
                     ))}
                   </div>
@@ -341,21 +340,19 @@ export const BanquetPage = () => {
                         <div
                           key={hall.id}
                           onClick={() => handleCardClick(position, hall)}
-                          className={`group relative bg-white rounded-3xl shadow-xl overflow-hidden transition-all duration-500 flex-1 max-w-sm cursor-pointer ${
-                            isCenter
+                          className={`group relative bg-white rounded-3xl shadow-xl overflow-hidden transition-all duration-500 flex-1 max-w-sm cursor-pointer ${isCenter
                               ? "scale-100 opacity-100 z-10 hover:scale-[1.05] hover:-translate-y-3 hover:shadow-2xl"
                               : "scale-90 opacity-60 hover:opacity-80 hover:scale-95"
-                          }`}
+                            }`}
                         >
                           <div className="relative h-64 overflow-hidden">
                             <img
                               src={hall.image}
                               alt={hall.name}
-                              className={`w-full h-full object-cover transition-transform duration-700 ${
-                                isCenter
+                              className={`w-full h-full object-cover transition-transform duration-700 ${isCenter
                                   ? "group-hover:scale-110"
                                   : "grayscale-[15%] group-hover:grayscale-0"
-                              }`}
+                                }`}
                             />
                             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent transition-all duration-500 group-hover:from-black/60" />
                             {/* Corner accents on hover - for all cards */}
@@ -364,16 +361,14 @@ export const BanquetPage = () => {
                           </div>
 
                           <div
-                            className={`p-7 transition-all duration-500 ${
-                              isCenter
+                            className={`p-7 transition-all duration-500 ${isCenter
                                 ? "group-hover:bg-gradient-to-b group-hover:from-white group-hover:to-gold/5"
                                 : ""
-                            }`}
+                              }`}
                           >
                             <h3
-                              className={`text-2xl font-royal text-gold mb-2 transition-all duration-300 ${
-                                isCenter ? "group-hover:text-darkGold" : ""
-                              }`}
+                              className={`text-2xl font-royal text-gold mb-2 transition-all duration-300 ${isCenter ? "group-hover:text-darkGold" : ""
+                                }`}
                             >
                               {hall.name}
                             </h3>
@@ -681,48 +676,47 @@ export const BanquetPage = () => {
                       Guests
                     </div>
                     <div className="w-[1px] h-4 bg-white/30" />
-                  <div>
-                    <span className="text-gold font-semibold">
-                    {lightboxHall.areaSqFt.toLocaleString()}
-                    </span>{" "}
-                    Sq. Ft.
+                    <div>
+                      <span className="text-gold font-semibold">
+                        {lightboxHall.areaSqFt.toLocaleString()}
+                      </span>{" "}
+                      Sq. Ft.
                     </div>
                   </div>
                   {/* Lightbox Book Banquet button */}
-              <button
-                onClick={() => {
-                  closeLightbox();
-                  navigate(`/banquet-booking?hallId=${lightboxHall.id}`);
-                }}
-                className="mt-6 w-full max-w-md bg-gold text-white py-3 rounded-lg text-sm uppercase tracking-wider hover:bg-darkGold transition"
-              >
-                Book Banquet
-              </button>
-            </div>
+                  <button
+                    onClick={() => {
+                      closeLightbox();
+                      navigate(`/banquet-booking?hallId=${lightboxHall.id}`);
+                    }}
+                    className="mt-6 w-full max-w-md bg-gold text-white py-3 rounded-lg text-sm uppercase tracking-wider hover:bg-darkGold transition"
+                  >
+                    Book Banquet
+                  </button>
+                </div>
 
-            {/* Dots indicator */}
-            <div className="flex items-center gap-2 mt-6">
-              {halls.map((hall, idx) => (
-                <button
-                  key={idx}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setCurrentIndex(idx);
-                    setLightboxHall(hall);
-                  }}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                    hall.id === lightboxHall.id
-                      ? "bg-gold w-8"
-                      : "bg-white/30 hover:bg-white/50"
-                  }`}
-                />
-              ))}
+                {/* Dots indicator */}
+                <div className="flex items-center gap-2 mt-6">
+                  {halls.map((hall, idx) => (
+                    <button
+                      key={idx}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setCurrentIndex(idx);
+                        setLightboxHall(hall);
+                      }}
+                      className={`w-2 h-2 rounded-full transition-all duration-300 ${hall.id === lightboxHall.id
+                          ? "bg-gold w-8"
+                          : "bg-white/30 hover:bg-white/50"
+                        }`}
+                    />
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
-    </>
-  )}
-</div>
-);
+    </div>
+  );
 };

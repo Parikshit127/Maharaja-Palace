@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { config } from "./config/env.js";
+import { logger } from "./utils/logger.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import roomRoutes from "./routes/roomRoutes.js";
@@ -18,16 +19,31 @@ app.use(
       "https://maharajapalace.vercel.app",
       "https://maharaja-palace-mocha.vercel.app",
       "https://maharaja-palace-btcy.onrender.com",
+      "https://maharaja-palace-nine.vercel.app",
     ],
     credentials: true,
   })
 );
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
+// Log all requests in development
 app.use((req, res, next) => {
-  console.log(`📍 ${req.method} ${req.path}`);
+  const start = Date.now();
+
+  // Log request
+  logger.info(`→ ${req.method} ${req.path}`);
+
+  // Log response
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    const logLevel = res.statusCode >= 400 ? "error" : "info";
+    logger[logLevel](
+      `← ${req.method} ${req.path} ${res.statusCode} ${duration}ms`
+    );
+  });
+
   next();
 });
 
@@ -55,6 +71,7 @@ app.get("/api/test", (req, res) => {
     timestamp: new Date().toISOString(),
     server: "Maharaja Palace Backend",
     port: config.port || 5000,
+    environment: config.nodeEnv,
   });
 });
 
@@ -64,6 +81,7 @@ app.use("/api/rooms", roomRoutes);
 app.use("/api/bookings", bookingRoutes);
 app.use("/api/banquet", banquetRoutes);
 app.use("/api/restaurant", restaurantRoutes);
+
 // API info route
 app.get("/api", (req, res) => {
   res.json({
@@ -80,9 +98,10 @@ app.get("/api", (req, res) => {
     },
   });
 });
-// 404 handler - This comes LAST
+
+// 404 handler - Must be after all routes
 app.use((req, res) => {
-  console.log(`❌ 404 - Route not found: ${req.method} ${req.path}`);
+  logger.warn(`404 - Route not found: ${req.method} ${req.path}`);
   res.status(404).json({
     success: false,
     message: "Route not found",
@@ -90,9 +109,11 @@ app.use((req, res) => {
     method: req.method,
     availableRoutes: [
       "GET /",
+      "GET /api",
       "GET /api/test",
       "POST /api/auth/login",
       "POST /api/auth/register",
+      "GET /api/auth/me",
       "GET /api/rooms/room-types",
       "GET /api/banquet/halls",
       "GET /api/restaurant/tables",
@@ -100,14 +121,78 @@ app.use((req, res) => {
   });
 });
 
-// Global error handler
+// Global error handler - MUST BE LAST
 app.use((err, req, res, next) => {
-  console.error("❌ Error:", err.message);
+  logger.error(`Unhandled error on ${req.method} ${req.path}: ${err.message}`);
+  logger.error(`Stack: ${err.stack}`);
 
-  res.status(err.statusCode || 500).json({
+  // Mongoose validation error
+  if (err.name === "ValidationError") {
+    const messages = Object.values(err.errors).map((e) => e.message);
+    return res.status(400).json({
+      success: false,
+      message: messages.join(", "),
+    });
+  }
+
+  // Mongoose duplicate key error (11000)
+  if (err.code === 11000) {
+    const field = Object.keys(err.keyPattern || {})[0] || "field";
+    return res.status(409).json({
+      success: false,
+      message: `${field.charAt(0).toUpperCase() + field.slice(1)
+        } already exists`,
+    });
+  }
+
+  // Mongoose cast error (invalid ObjectId)
+  if (err.name === "CastError") {
+    return res.status(400).json({
+      success: false,
+      message: `Invalid ${err.path}: ${err.value}`,
+    });
+  }
+
+  // JWT errors
+  if (err.name === "JsonWebTokenError") {
+    return res.status(401).json({
+      success: false,
+      message: "Invalid authentication token",
+    });
+  }
+
+  if (err.name === "TokenExpiredError") {
+    return res.status(401).json({
+      success: false,
+      message: "Authentication token expired",
+    });
+  }
+
+  // Multer file upload errors
+  if (err.name === "MulterError") {
+    return res.status(400).json({
+      success: false,
+      message: `File upload error: ${err.message}`,
+    });
+  }
+
+  // SyntaxError (usually from malformed JSON)
+  if (err instanceof SyntaxError && err.status === 400 && "body" in err) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid JSON in request body",
+    });
+  }
+
+  // Default error response
+  const statusCode = err.statusCode || err.status || 500;
+  const message = err.message || "Internal server error";
+
+  res.status(statusCode).json({
     success: false,
-    message: err.message || "Internal server error",
-    ...(process.env.NODE_ENV === "development" && {
+    message: message,
+    ...(config.nodeEnv === "development" && {
+      error: err.message,
       stack: err.stack,
     }),
   });
