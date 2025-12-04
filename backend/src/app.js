@@ -3,7 +3,6 @@ import cors from "cors";
 import { config } from "./config/env.js";
 import { logger } from "./utils/logger.js";
 
-// Import routes
 import authRoutes from "./routes/authRoutes.js";
 import roomRoutes from "./routes/roomRoutes.js";
 import bookingRoutes from "./routes/bookingRoutes.js";
@@ -12,14 +11,15 @@ import restaurantRoutes from "./routes/restaurantRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 
 const app = express();
-
-// Middleware
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
       "http://localhost:3000",
       "http://localhost:5174",
+      "https://maharajapalace.vercel.app",
+      "https://maharaja-palace-mocha.vercel.app",
+      "https://maharaja-palace-btcy.onrender.com",
       "https://maharaja-palace-nine.vercel.app",
     ],
     credentials: true,
@@ -29,7 +29,7 @@ app.use(
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-// Request logging middleware
+// Log all requests in development
 app.use((req, res, next) => {
   const start = Date.now();
 
@@ -48,7 +48,6 @@ app.use((req, res, next) => {
   next();
 });
 
-// Health check route
 app.get("/", (req, res) => {
   res.json({
     success: true,
@@ -66,7 +65,6 @@ app.get("/", (req, res) => {
   });
 });
 
-// Test route - MUST BE BEFORE other /api/* routes
 app.get("/api/test", (req, res) => {
   res.json({
     success: true,
@@ -144,9 +142,8 @@ app.use((err, req, res, next) => {
     const field = Object.keys(err.keyPattern || {})[0] || "field";
     return res.status(409).json({
       success: false,
-      message: `${
-        field.charAt(0).toUpperCase() + field.slice(1)
-      } already exists`,
+      message: `${field.charAt(0).toUpperCase() + field.slice(1)
+        } already exists`,
     });
   }
 
