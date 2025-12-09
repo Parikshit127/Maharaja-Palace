@@ -8,6 +8,14 @@ const months = [
   "July","August","September","October","November","December",
 ];
 
+// Location options matching backend enum
+const locationOptions = [
+  { value: 'main_hall', label: 'Main Hall' },
+  { value: 'garden', label: 'Garden' },
+  { value: 'private_room', label: 'Private Room' },
+  { value: 'lounge', label: 'Lounge' }
+];
+
 export const AdminRestaurant = ({ selectedMonth, setSelectedMonth }) => {
   const [tables, setTables] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -17,7 +25,7 @@ export const AdminRestaurant = ({ selectedMonth, setSelectedMonth }) => {
   const [formData, setFormData] = useState({
     tableNumber: '',
     capacity: '',
-    location: '',
+    location: 'main_hall',
     description: '',
   });
 
@@ -43,7 +51,7 @@ export const AdminRestaurant = ({ selectedMonth, setSelectedMonth }) => {
     setFormData({
       tableNumber: '',
       capacity: '',
-      location: '',
+      location: 'main_hall',
       description: '',
     });
     setShowForm(true);
@@ -195,15 +203,20 @@ export const AdminRestaurant = ({ selectedMonth, setSelectedMonth }) => {
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Location
+                  Location *
                 </label>
-                <input
-                  type="text"
+                <select
                   value={formData.location}
                   onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                  placeholder="e.g., Window, Center, Patio"
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#B8860B] focus:border-transparent"
-                />
+                  required
+                >
+                  {locationOptions.map(option => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
             <div>
@@ -261,7 +274,9 @@ export const AdminRestaurant = ({ selectedMonth, setSelectedMonth }) => {
               <div>
                 <h3 className="text-lg font-bold text-[#2a2a2a]">Table {table.tableNumber}</h3>
                 <p className="text-sm text-gray-500">Capacity: {table.capacity} guests</p>
-                <p className="text-sm text-gray-500">{table.location}</p>
+                <p className="text-sm text-gray-500">
+                  {locationOptions.find(loc => loc.value === table.location)?.label || table.location}
+                </p>
               </div>
               <span
                 className={`px-3 py-1 rounded-full text-xs font-semibold ${
